@@ -1,3 +1,6 @@
+mod styles;
+use styles::rounded_danger_style;
+
 use iced::widget::{button, column, container, row, text, Column};
 use iced::{Center, Length, Theme};
 
@@ -62,10 +65,11 @@ impl OliverExplorer {
                 // Left side: Title with padding
                 text(&self.title).size(16).width(Length::Fill),
                 // Right side: Close button
-                button(text("✕").size(16))
+                button(text("X").size(8))
                     .on_press(Message::Close)
-                    .padding([2, 8])
-                    .style(button::danger)
+                    .width(Length::Fixed(20.0))
+                    .height(Length::Fixed(20.0))
+                    .style(rounded_danger_style)
             ]
             .spacing(10)
             .padding(10)
