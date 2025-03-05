@@ -1,7 +1,11 @@
+mod config;
 mod styles;
+
+use config::{TEXT_SIZE, WIDGET_SIZE};
 use styles::rounded_danger_style;
 
 use iced::widget::{button, column, container, row, text, Column};
+use iced::Alignment;
 use iced::{Center, Length, Theme};
 
 pub fn start_browser() -> iced::Result {
@@ -65,11 +69,15 @@ impl OliverExplorer {
                 // Left side: Title with padding
                 text(&self.title).size(16).width(Length::Fill),
                 // Right side: Close button
-                button(text("X").size(8))
-                    .on_press(Message::Close)
-                    .width(Length::Fixed(20.0))
-                    .height(Length::Fixed(20.0))
-                    .style(rounded_danger_style)
+                button(
+                    container(text("×").size(TEXT_SIZE))
+                        .align_x(Alignment::Center)
+                        .align_y(Alignment::Center)
+                )
+                .on_press(Message::Close)
+                .width(Length::Fixed(WIDGET_SIZE))
+                .height(Length::Fixed(WIDGET_SIZE))
+                .style(rounded_danger_style)
             ]
             .spacing(10)
             .padding(10)
