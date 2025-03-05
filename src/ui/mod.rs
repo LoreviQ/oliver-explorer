@@ -1,16 +1,17 @@
 use iced::widget::{button, column, container, row, text, Column};
-use iced::Length;
+use iced::{Length, Theme};
 
 pub fn start_browser() -> iced::Result {
-    let mut window_settings = iced::window::Settings::default();
-    window_settings.decorations = false;
-
     iced::application(
         "Oliver Explorer",
         OliverExplorer::update,
         OliverExplorer::view,
     )
-    .window(window_settings)
+    .window(iced::window::Settings {
+        decorations: false,
+        ..Default::default()
+    })
+    .theme(|_| Theme::Dark)
     .run()
 }
 
