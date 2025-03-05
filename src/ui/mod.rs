@@ -1,5 +1,5 @@
 use iced::widget::{button, column, container, row, text, Column};
-use iced::{Length, Theme};
+use iced::{Center, Length, Theme};
 
 pub fn start_browser() -> iced::Result {
     iced::application(
@@ -24,6 +24,7 @@ struct OliverExplorer {
 enum Message {
     // Placeholder for future browser actions
     Reload,
+    Close,
 }
 
 impl Default for OliverExplorer {
@@ -47,18 +48,32 @@ impl OliverExplorer {
             Message::Reload => {
                 // For now, this doesn't do anything
             }
+            Message::Close => {
+                // This will exit the application
+                std::process::exit(0);
+            }
         }
     }
 
     fn view(&self) -> Column<Message> {
         // Title bar
-        let title_bar = row![
-            text(&self.title).size(24),
-            button("Reload").on_press(Message::Reload),
-        ]
-        .spacing(10)
-        .padding(10)
-        .width(Length::Fill);
+        let title_bar = container(
+            row![
+                // Left side: Title with padding
+                text(&self.title).size(16).width(Length::Fill),
+                // Right side: Close button
+                button(text("✕").size(16))
+                    .on_press(Message::Close)
+                    .padding([2, 8])
+                    .style(button::danger)
+            ]
+            .spacing(10)
+            .padding(10)
+            .width(Length::Fill)
+            .align_y(Center),
+        )
+        .width(Length::Fill)
+        .style(container::dark);
 
         // Content panel (just showing raw HTML for now)
         let content_panel = container(text(&self.content).width(Length::Fill))
