@@ -1,26 +1,23 @@
-use scraper::{Html, Selector};
-use std::error::Error;
+mod html;
+mod networking;
 
-fn main() {
-    let url = "https://www.oliver.tj/";
-    let html = fetch_url(url).unwrap();
-    let text_content = parse_html(&html).unwrap();
-    println!("Text content: {}", text_content);
+use iced::widget::{button, column, text, Column};
+
+pub fn main() -> iced::Result {
+    iced::run("A cool counter", update, view)
 }
 
-fn fetch_url(url: &str) -> Result<String, Box<dyn Error>> {
-    let body = reqwest::blocking::get(url)?.text()?;
-    Ok(body)
+#[derive(Debug, Clone)]
+enum Message {
+    Increment,
 }
 
-fn parse_html(html: &str) -> Result<String, Box<dyn Error>> {
-    let document = Html::parse_document(&html);
-    let body_selector = Selector::parse("body").unwrap();
-    let text_content = document
-        .select(&body_selector)
-        .flat_map(|element| element.text())
-        .collect::<Vec<_>>()
-        .join(" ");
+fn update(value: &mut u64, message: Message) {
+    match message {
+        Message::Increment => *value += 1,
+    }
+}
 
-    Ok(text_content)
+fn view(value: &u64) -> Column<Message> {
+    column![text(value), button("+").on_press(Message::Increment),]
 }
