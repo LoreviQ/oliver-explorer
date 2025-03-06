@@ -1,13 +1,11 @@
+mod components;
 mod config;
 mod icons;
 mod styles;
 
-use config::WIDGET_SIZE;
-use styles::rounded_danger_style;
+use components::close_button;
 
-use iced::widget::svg;
-use iced::widget::{button, column, container, row, text, Column};
-use iced::Alignment;
+use iced::widget::{column, container, row, text, Column};
 use iced::{Center, Length, Theme};
 
 pub fn start_browser() -> iced::Result {
@@ -32,7 +30,6 @@ struct OliverExplorer {
 #[derive(Debug, Clone)]
 enum Message {
     // Placeholder for future browser actions
-    Reload,
     Close,
 }
 
@@ -54,9 +51,6 @@ impl OliverExplorer {
 
     fn update(&mut self, message: Message) {
         match message {
-            Message::Reload => {
-                // For now, this doesn't do anything
-            }
             Message::Close => {
                 // This will exit the application
                 std::process::exit(0);
@@ -71,19 +65,7 @@ impl OliverExplorer {
                 // Left side: Title with padding
                 text(&self.title).size(16).width(Length::Fill),
                 // Right side: Close button
-                button(
-                    container(
-                        svg(icons::x_icon())
-                            .width(Length::Fixed(WIDGET_SIZE * 0.7))
-                            .height(Length::Fixed(WIDGET_SIZE * 0.7))
-                    )
-                    .align_x(Alignment::Center)
-                    .align_y(Alignment::Center)
-                )
-                .on_press(Message::Close)
-                .width(Length::Fixed(WIDGET_SIZE))
-                .height(Length::Fixed(WIDGET_SIZE))
-                .style(rounded_danger_style)
+                close_button()
             ]
             .spacing(10)
             .padding(10)

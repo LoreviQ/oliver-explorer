@@ -1,4 +1,4 @@
-use super::config::*;
+use crate::ui::config::WIDGET_SIZE;
 
 use iced::border::Radius;
 use iced::widget::button;
