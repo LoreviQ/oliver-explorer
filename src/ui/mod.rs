@@ -3,7 +3,7 @@ mod config;
 mod icons;
 mod styles;
 
-use components::title_bar_container;
+use components::{title_bar_button, title_bar_container};
 
 use iced::widget::{column, container, text, Column};
 use iced::{Length, Theme};
@@ -60,7 +60,7 @@ impl OliverExplorer {
 
     fn view(&self) -> Column<Message> {
         // Title bar
-        let title_bar = title_bar_container();
+        let title_bar = title_bar_button();
 
         // Content panel (just showing raw HTML for now)
         let content_panel = container(text(&self.content).width(Length::Fill))
