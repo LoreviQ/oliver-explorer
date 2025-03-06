@@ -1,9 +1,11 @@
 mod config;
+mod icons;
 mod styles;
 
-use config::{TEXT_SIZE, WIDGET_SIZE};
+use config::WIDGET_SIZE;
 use styles::rounded_danger_style;
 
+use iced::widget::svg;
 use iced::widget::{button, column, container, row, text, Column};
 use iced::Alignment;
 use iced::{Center, Length, Theme};
@@ -70,9 +72,13 @@ impl OliverExplorer {
                 text(&self.title).size(16).width(Length::Fill),
                 // Right side: Close button
                 button(
-                    container(text("×").size(TEXT_SIZE))
-                        .align_x(Alignment::Center)
-                        .align_y(Alignment::Center)
+                    container(
+                        svg(icons::x_icon())
+                            .width(Length::Fixed(WIDGET_SIZE * 0.7))
+                            .height(Length::Fixed(WIDGET_SIZE * 0.7))
+                    )
+                    .align_x(Alignment::Center)
+                    .align_y(Alignment::Center)
                 )
                 .on_press(Message::Close)
                 .width(Length::Fixed(WIDGET_SIZE))
