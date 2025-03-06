@@ -3,10 +3,10 @@ mod config;
 mod icons;
 mod styles;
 
-use components::close_button;
+use components::title_bar_container;
 
-use iced::widget::{column, container, row, text, Column};
-use iced::{Center, Length, Theme};
+use iced::widget::{column, container, text, Column};
+use iced::{Length, Theme};
 
 pub fn start_browser() -> iced::Result {
     iced::application(
@@ -60,20 +60,7 @@ impl OliverExplorer {
 
     fn view(&self) -> Column<Message> {
         // Title bar
-        let title_bar = container(
-            row![
-                // Left side: Title with padding
-                text(&self.title).size(16).width(Length::Fill),
-                // Right side: Close button
-                close_button()
-            ]
-            .spacing(10)
-            .padding(10)
-            .width(Length::Fill)
-            .align_y(Center),
-        )
-        .width(Length::Fill)
-        .style(container::dark);
+        let title_bar = title_bar_container();
 
         // Content panel (just showing raw HTML for now)
         let content_panel = container(text(&self.content).width(Length::Fill))

@@ -1,5 +1,5 @@
-use iced::widget::{button, container, svg, Button};
-use iced::{Alignment, Length};
+use iced::widget::{button, container, row, svg, text, Button, Container};
+use iced::{Alignment, Center, Length};
 
 use crate::ui::config::WIDGET_SIZE;
 use crate::ui::icons;
@@ -21,4 +21,21 @@ pub fn close_button() -> Button<'static, Message> {
     .width(Length::Fixed(WIDGET_SIZE))
     .height(Length::Fixed(WIDGET_SIZE))
     .style(rounded_danger_style)
+}
+
+pub fn title_bar_container() -> Container<'static, Message> {
+    container(
+        row![
+            // Left side: Title with padding
+            text("Oliver Explorer").size(16).width(Length::Fill),
+            // Right side: Close button
+            close_button()
+        ]
+        .spacing(10)
+        .padding(10)
+        .width(Length::Fill)
+        .align_y(Center),
+    )
+    .width(Length::Fill)
+    .style(container::dark)
 }
