@@ -75,11 +75,30 @@ impl<'a> TabItem<'a> {
         let url = self.tab.get_url();
         let tab_name = url.clone();
 
-        // Create a layout with fixed width but allow text to overflow (it will be clipped)
-        ui.add_sized(
-            [self.width, ui.available_size().y],
-            egui::SelectableLabel::new(self.is_active, tab_name),
-        )
+        // Get the background fill and stroke color for the tab
+        let (bg_fill, stroke_color) = if self.is_active {
+            (
+                ui.style().visuals.selection.bg_fill,
+                ui.style().visuals.selection.stroke.color,
+            )
+        } else {
+            (
+                ui.style().visuals.widgets.inactive.bg_fill,
+                ui.style().visuals.widgets.inactive.text_color(),
+            )
+        };
+
+        // Create a frame for the tab with fixed width
+        let frame = egui::Frame::new().fill(bg_fill);
+        frame
+            .show(ui, |ui| {
+                ui.set_width(self.width);
+                ui.add(
+                    egui::Label::new(egui::RichText::new(tab_name).color(stroke_color)).truncate(),
+                )
+            })
+            .response
+            .interact(egui::Sense::click())
     }
 }
 
