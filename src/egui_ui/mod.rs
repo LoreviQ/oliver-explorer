@@ -1,12 +1,14 @@
+mod config;
+
 use eframe::egui;
 
 pub fn start_browser() -> eframe::Result {
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
+        viewport: egui::ViewportBuilder::default(),
         ..Default::default()
     };
     eframe::run_native(
-        "Oliver Explorer",
+        config::TITLE,
         options,
         Box::new(|cc| {
             // This gives us image support:
@@ -17,15 +19,15 @@ pub fn start_browser() -> eframe::Result {
 }
 
 struct OliverExplorer {
-    name: String,
-    age: u32,
+    content: String,
 }
 
 impl Default for OliverExplorer {
     fn default() -> Self {
         Self {
-            name: "Oliver".to_owned(),
-            age: 27,
+            content: String::from(
+                "<html><body><h1>Hello, World!</h1><p>Welcome to Oliver Explorer</p></body></html>",
+            ),
         }
     }
 }
@@ -33,18 +35,26 @@ impl Default for OliverExplorer {
 impl eframe::App for OliverExplorer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("My egui Application");
-            ui.horizontal(|ui| {
-                let name_label = ui.label("Your name: ");
-                ui.text_edit_singleline(&mut self.name)
-                    .labelled_by(name_label.id);
-            });
-            ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
-            if ui.button("Increment").clicked() {
-                self.age += 1;
-            }
-            ui.label(format!("Hello '{}', age {}", self.name, self.age));
-            ui.image(egui::include_image!("../../assets/tomato.png"));
+            // Title bar section
+            ui.allocate_ui_with_layout(
+                egui::vec2(ui.available_width(), config::TITLE_BAR_HEIGHT),
+                egui::Layout::left_to_right(egui::Align::Center),
+                |ui| {
+                    ui.heading(config::TITLE);
+                    // Add any other title bar elements here
+                },
+            );
+
+            // Content panel section
+            ui.allocate_ui_with_layout(
+                egui::vec2(ui.available_width(), ui.available_height()),
+                egui::Layout::top_down(egui::Align::LEFT),
+                |ui| {
+                    // Display the HTML content
+                    ui.label(&self.content);
+                    // Later you might want to use a proper HTML renderer here
+                },
+            );
         });
     }
 }
