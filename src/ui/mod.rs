@@ -1,5 +1,8 @@
 mod config;
 
+use crate::html;
+use crate::networking;
+
 use eframe::egui;
 
 pub fn start_browser() -> eframe::Result {
@@ -19,15 +22,20 @@ pub fn start_browser() -> eframe::Result {
 }
 
 struct OliverExplorer {
+    url: String,
+    html_content: String,
     content: String,
 }
 
 impl Default for OliverExplorer {
     fn default() -> Self {
+        let url = config::DEFAULT_URL;
+        let html_content = networking::fetch_url(&url).unwrap();
+        let content = html::parse_html(&html_content).unwrap();
         Self {
-            content: String::from(
-                "<html><body><h1>Hello, World!</h1><p>Welcome to Oliver Explorer</p></body></html>",
-            ),
+            url: url.to_string(),
+            html_content,
+            content,
         }
     }
 }
