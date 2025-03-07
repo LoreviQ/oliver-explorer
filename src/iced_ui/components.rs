@@ -42,18 +42,16 @@ pub fn title_bar_container() -> Container<'static, Message> {
 }
 
 //title bar as a button so we can use it as a draggable area
-pub fn title_bar_button() -> Button<'static, Message> {
+pub fn title_bar_button<'a>(content: iced::widget::Row<'a, Message>) -> Button<'a, Message> {
     button(
-        row![
-            // Left side: Title with padding
-            text("Oliver Explorer").size(16).width(Length::Fill),
-        ]
-        .spacing(10)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .align_y(Center),
+        content
+            .spacing(10)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .align_y(Center),
     )
     .width(Length::Fill)
     .height(Length::Fixed(TITLE_BAR_HEIGHT))
     .style(title_bar_button_style)
+    .on_press(Message::DragWindow)
 }

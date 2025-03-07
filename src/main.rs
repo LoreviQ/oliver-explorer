@@ -1,7 +1,7 @@
+mod egui_ui;
 mod html;
 mod networking;
-mod ui;
 
-pub fn main() -> iced::Result {
-    ui::start_browser()
+pub fn main() -> eframe::Result<()> {
+    egui_ui::start_browser()
 }
