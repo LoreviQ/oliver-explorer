@@ -1,5 +1,6 @@
 mod components;
 mod config;
+mod theme;
 mod types;
 
 use eframe::egui;

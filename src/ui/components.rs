@@ -1,5 +1,7 @@
 use crate::ui::config;
+use crate::ui::theme;
 use crate::ui::types;
+
 use eframe::egui;
 use eframe::epaint::Margin;
 
@@ -121,17 +123,14 @@ impl<'a> TabItem<'a> {
         let url = self.tab.get_url();
         let tab_name = url.clone();
 
+        // Get the theme
+        let theme = theme::get_theme();
+
         // Get the background fill and stroke color for the tab
         let (bg_fill, stroke_color) = if self.is_active {
-            (
-                ui.style().visuals.selection.bg_fill,
-                ui.style().visuals.selection.stroke.color,
-            )
+            (theme.active.background, theme.active.text)
         } else {
-            (
-                ui.style().visuals.widgets.inactive.bg_fill,
-                ui.style().visuals.widgets.inactive.text_color(),
-            )
+            (theme.inactive.background, theme.inactive.text)
         };
 
         // Create a frame for the tab with fixed width and padding
@@ -173,7 +172,7 @@ impl<'a> TabItem<'a> {
                             ui.painter().rect_filled(
                                 hover_rect,
                                 4.0, // Rounded corners radius
-                                ui.style().visuals.widgets.hovered.bg_fill,
+                                theme.general.hover,
                             );
                             // Redraw the text on top of the background
                             ui.painter().text(
