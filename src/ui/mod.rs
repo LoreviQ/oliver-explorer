@@ -39,10 +39,13 @@ impl Default for OliverExplorer {
 impl eframe::App for OliverExplorer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
+            // Get the theme
+            let theme = theme::get_theme();
+
             // Tab bar section
             self.active_tab = {
                 let mut tab_bar = components::TabBar::new(self.active_tab, &mut self.tabs);
-                tab_bar.show(ui)
+                tab_bar.show(ui, &theme)
             };
 
             // Content panel section

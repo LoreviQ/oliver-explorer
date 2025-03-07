@@ -18,18 +18,18 @@ impl<'a> TabBar<'a> {
     }
 
     // Show the tab bar returns the index of the active tab
-    pub fn show(&mut self, ui: &mut egui::Ui) -> usize {
+    pub fn show(&mut self, ui: &mut egui::Ui, theme: &theme::Theme) -> usize {
         let original_spacing = ui.spacing().item_spacing;
-        ui.spacing_mut().item_spacing.x = config::TAB_SPACING;
+        ui.spacing_mut().item_spacing.x = theme.frame.spacing;
 
         ui.horizontal(|ui| {
             // Tab bar height
-            ui.set_min_height(config::TAB_BAR_HEIGHT);
+            ui.set_min_height(theme.frame.tab.height);
 
             // Tab items
-            let tab_width = self.calculate_tab_width(ui);
+            let tab_width = self.calculate_tab_width(ui, theme);
             for (index, tab) in self.tabs.iter().enumerate() {
-                let action = TabItem::new(tab, self.active_tab == index, tab_width).show(ui);
+                let action = TabItem::new(tab, self.active_tab == index, tab_width).show(ui, theme);
 
                 // Handle the action
                 match action {
@@ -58,13 +58,13 @@ impl<'a> TabBar<'a> {
     }
 
     // Calculate tab width based on available space
-    fn calculate_tab_width(&self, ui: &mut egui::Ui) -> f32 {
+    fn calculate_tab_width(&self, ui: &mut egui::Ui, theme: &theme::Theme) -> f32 {
         let tab_count = self.tabs.len() as f32;
         let available_width = ui.available_width();
         let plus_button_width = ui.available_size().y;
-        let spacing_width = tab_count * config::TAB_SPACING;
+        let spacing_width = tab_count * theme.frame.spacing;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
-        width_per_tab.min(config::MAX_TAB_WIDTH)
+        width_per_tab.min(theme.frame.tab.width.max)
     }
 
     // Close a tab at the given index
@@ -118,13 +118,10 @@ impl<'a> TabItem<'a> {
     }
 
     // Show the tab item and return the action
-    pub fn show(&self, ui: &mut egui::Ui) -> TabAction {
+    pub fn show(&self, ui: &mut egui::Ui, theme: &theme::Theme) -> TabAction {
         let mut action = TabAction::None;
         let url = self.tab.get_url();
         let tab_name = url.clone();
-
-        // Get the theme
-        let theme = theme::get_theme();
 
         // Get the background fill and stroke color for the tab
         let (bg_fill, stroke_color) = if self.is_active {
@@ -136,11 +133,14 @@ impl<'a> TabItem<'a> {
         // Create a frame for the tab with fixed width and padding
         let frame = egui::Frame::new()
             .fill(bg_fill)
-            .inner_margin(Margin::symmetric(config::TAB_PADDING, config::TAB_PADDING));
+            .inner_margin(Margin::symmetric(
+                theme.frame.padding as i8,
+                theme.frame.padding as i8,
+            ));
 
         let response = frame
             .show(ui, |ui| {
-                ui.set_width(self.width - (config::TAB_PADDING as f32 * 2.0));
+                ui.set_width(self.width - (theme.frame.padding * 2.0));
 
                 // Use horizontal layout to place label and close button side by side
                 ui.horizontal(|ui| {
@@ -149,7 +149,7 @@ impl<'a> TabItem<'a> {
                         egui::Label::new(
                             egui::RichText::new(tab_name)
                                 .color(stroke_color)
-                                .size(config::TEXT_SIZE),
+                                .size(theme.frame.text_size),
                         )
                         .truncate(),
                     );
@@ -160,7 +160,7 @@ impl<'a> TabItem<'a> {
                         let close_button = egui::Button::new(
                             egui::RichText::new("×")
                                 .color(stroke_color)
-                                .size(config::TEXT_SIZE),
+                                .size(theme.frame.text_size),
                         )
                         .frame(false); // Remove button background/frame
 
@@ -179,7 +179,7 @@ impl<'a> TabItem<'a> {
                                 hover_rect.center(),
                                 egui::Align2::CENTER_CENTER,
                                 "×",
-                                egui::FontId::proportional(config::TEXT_SIZE),
+                                egui::FontId::proportional(theme.frame.text_size),
                                 stroke_color,
                             );
                         }
