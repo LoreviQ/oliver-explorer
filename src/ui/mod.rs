@@ -1,7 +1,6 @@
+mod components;
 mod config;
-
-use crate::html;
-use crate::networking;
+mod types;
 
 use eframe::egui;
 
@@ -21,33 +20,14 @@ pub fn start_browser() -> eframe::Result {
     )
 }
 
-// New Tab struct to hold tab-specific data
-struct Tab {
-    url: String,
-    html_content: String,
-    content: String,
-}
-
-impl Tab {
-    fn new(url: &str) -> Self {
-        let html_content = networking::fetch_url(url).unwrap_or_default();
-        let content = html::parse_html(&html_content).unwrap_or_default();
-        Self {
-            url: url.to_string(),
-            html_content,
-            content,
-        }
-    }
-}
-
 struct OliverExplorer {
-    tabs: Vec<Tab>,
+    tabs: Vec<types::Tab>,
     active_tab: usize,
 }
 
 impl Default for OliverExplorer {
     fn default() -> Self {
-        let default_tab = Tab::new(config::DEFAULT_URL);
+        let default_tab = types::Tab::new(config::DEFAULT_URL);
         Self {
             tabs: vec![default_tab],
             active_tab: 0,
@@ -59,27 +39,10 @@ impl eframe::App for OliverExplorer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             // Tab bar section
-            ui.horizontal(|ui| {
-                for (index, tab) in self.tabs.iter().enumerate() {
-                    let tab_name = if tab.url.len() > 20 {
-                        format!("{}...", &tab.url[..20])
-                    } else {
-                        tab.url.clone()
-                    };
-
-                    if ui
-                        .selectable_label(self.active_tab == index, tab_name)
-                        .clicked()
-                    {
-                        self.active_tab = index;
-                    }
-                }
-
-                if ui.button("+").clicked() {
-                    self.tabs.push(Tab::new(config::DEFAULT_URL));
-                    self.active_tab = self.tabs.len() - 1;
-                }
-            });
+            self.active_tab = {
+                let mut tab_bar = components::TabBar::new(self.active_tab, &mut self.tabs);
+                tab_bar.show(ui)
+            };
 
             // Content panel section
             ui.allocate_ui_with_layout(
