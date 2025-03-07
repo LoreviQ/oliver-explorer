@@ -98,7 +98,12 @@ impl<'a> TabItem<'a> {
             .show(ui, |ui| {
                 ui.set_width(self.width - (config::TAB_PADDING as f32 * 2.0));
                 ui.add(
-                    egui::Label::new(egui::RichText::new(tab_name).color(stroke_color)).truncate(),
+                    egui::Label::new(
+                        egui::RichText::new(tab_name)
+                            .color(stroke_color)
+                            .size(config::TEXT_SIZE),
+                    )
+                    .truncate(),
                 )
             })
             .response
