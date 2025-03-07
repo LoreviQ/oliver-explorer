@@ -4,3 +4,4 @@ pub const TEXT_SIZE: u16 = 8;
 pub const DEFAULT_URL: &str = "http://localhost:3333";
 pub const MAX_TAB_WIDTH: f32 = 200.0;
 pub const TAB_SPACING: f32 = 4.0;
+pub const TAB_PADDING: i8 = 8;

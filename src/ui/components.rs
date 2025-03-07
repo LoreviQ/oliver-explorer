@@ -1,6 +1,7 @@
 use crate::ui::config;
 use crate::ui::types;
 use eframe::egui;
+use eframe::epaint::Margin;
 
 // Tab bar component
 pub struct TabBar<'a> {
@@ -88,11 +89,14 @@ impl<'a> TabItem<'a> {
             )
         };
 
-        // Create a frame for the tab with fixed width
-        let frame = egui::Frame::new().fill(bg_fill);
+        // Create a frame for the tab with fixed width and padding
+        let frame = egui::Frame::new()
+            .fill(bg_fill)
+            .inner_margin(Margin::symmetric(config::TAB_PADDING, config::TAB_PADDING));
+
         frame
             .show(ui, |ui| {
-                ui.set_width(self.width);
+                ui.set_width(self.width - (config::TAB_PADDING as f32 * 2.0));
                 ui.add(
                     egui::Label::new(egui::RichText::new(tab_name).color(stroke_color)).truncate(),
                 )
