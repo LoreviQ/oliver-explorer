@@ -19,6 +19,7 @@ impl<'a> TabBar<'a> {
     pub fn show(&mut self, ui: &mut egui::Ui) -> usize {
         let original_spacing = ui.spacing().item_spacing;
         ui.spacing_mut().item_spacing.x = config::TAB_SPACING;
+
         ui.horizontal(|ui| {
             // Tab bar height
             ui.set_min_height(config::TAB_BAR_HEIGHT);
@@ -26,9 +27,19 @@ impl<'a> TabBar<'a> {
             // Tab items
             let tab_width = self.calculate_tab_width(ui);
             for (index, tab) in self.tabs.iter().enumerate() {
-                let tab_item = TabItem::new(tab, self.active_tab == index, tab_width).show(ui);
-                if tab_item.clicked() {
-                    self.active_tab = index;
+                let action = TabItem::new(tab, self.active_tab == index, tab_width).show(ui);
+
+                // Handle the action
+                match action {
+                    TabAction::Select => {
+                        self.active_tab = index;
+                    }
+                    TabAction::Close => {
+                        self.close_tab(index);
+                        // Break out of the loop since we modified the tabs collection
+                        break;
+                    }
+                    TabAction::None => {}
                 }
             }
 
@@ -40,6 +51,7 @@ impl<'a> TabBar<'a> {
             }
         });
         ui.spacing_mut().item_spacing = original_spacing;
+
         self.active_tab
     }
 
@@ -52,6 +64,38 @@ impl<'a> TabBar<'a> {
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
         width_per_tab.min(config::MAX_TAB_WIDTH)
     }
+
+    // Close a tab at the given index
+    fn close_tab(&mut self, index: usize) {
+        if self.tabs.len() <= 1 {
+            // If this is the last tab, request application to close
+            std::process::exit(0);
+        } else {
+            self.tabs.remove(index);
+
+            // Adjust active_tab if necessary
+            if index <= self.active_tab {
+                if index == self.active_tab {
+                    // If we closed the active tab
+                    if index == self.tabs.len() {
+                        // If it was the last tab, activate the new last tab
+                        self.active_tab = self.tabs.len() - 1;
+                    }
+                    // Otherwise active_tab stays the same (points to the next tab)
+                } else {
+                    // If we closed a tab before the active tab, decrement active_tab
+                    self.active_tab -= 1;
+                }
+            }
+        }
+    }
+}
+
+// Define an enum for tab actions
+pub enum TabAction {
+    None,
+    Select,
+    Close,
 }
 
 // Tab item component
@@ -71,8 +115,9 @@ impl<'a> TabItem<'a> {
         }
     }
 
-    // Show the tab item
-    pub fn show(&self, ui: &mut egui::Ui) -> egui::Response {
+    // Show the tab item and return the action
+    pub fn show(&self, ui: &mut egui::Ui) -> TabAction {
+        let mut action = TabAction::None;
         let url = self.tab.get_url();
         let tab_name = url.clone();
 
@@ -94,20 +139,66 @@ impl<'a> TabItem<'a> {
             .fill(bg_fill)
             .inner_margin(Margin::symmetric(config::TAB_PADDING, config::TAB_PADDING));
 
-        frame
+        let response = frame
             .show(ui, |ui| {
                 ui.set_width(self.width - (config::TAB_PADDING as f32 * 2.0));
-                ui.add(
-                    egui::Label::new(
-                        egui::RichText::new(tab_name)
-                            .color(stroke_color)
-                            .size(config::TEXT_SIZE),
-                    )
-                    .truncate(),
-                )
+
+                // Use horizontal layout to place label and close button side by side
+                ui.horizontal(|ui| {
+                    // Tab label with truncation - make it take most of the space
+                    ui.add(
+                        egui::Label::new(
+                            egui::RichText::new(tab_name)
+                                .color(stroke_color)
+                                .size(config::TEXT_SIZE),
+                        )
+                        .truncate(),
+                    );
+
+                    // Add flexible space to push the close button to the right
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        // Close (X) button with transparent background
+                        let close_button = egui::Button::new(
+                            egui::RichText::new("×")
+                                .color(stroke_color)
+                                .size(config::TEXT_SIZE),
+                        )
+                        .frame(false); // Remove button background/frame
+
+                        let response = ui.add_sized([16.0, 16.0], close_button);
+
+                        // Add hover effect - show background when hovered
+                        if response.hovered() {
+                            let hover_rect = response.rect;
+                            ui.painter().rect_filled(
+                                hover_rect,
+                                4.0, // Rounded corners radius
+                                ui.style().visuals.widgets.hovered.bg_fill,
+                            );
+                            // Redraw the text on top of the background
+                            ui.painter().text(
+                                hover_rect.center(),
+                                egui::Align2::CENTER_CENTER,
+                                "×",
+                                egui::FontId::proportional(config::TEXT_SIZE),
+                                stroke_color,
+                            );
+                        }
+
+                        if response.clicked() {
+                            action = TabAction::Close;
+                        }
+                    });
+                })
             })
-            .response
-            .interact(egui::Sense::click())
+            .response;
+
+        // If the tab was clicked and we haven't already set an action, set it to Select
+        if response.clicked() && matches!(action, TabAction::None) {
+            action = TabAction::Select;
+        }
+
+        action
     }
 }
 
