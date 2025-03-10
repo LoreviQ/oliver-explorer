@@ -23,21 +23,21 @@ pub fn start_browser() -> eframe::Result {
 impl eframe::App for state::OliverExplorer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            // Tab bar section
-            self.windows[0].draw_tab_bar(ui);
+            for window in &mut self.windows {
+                // Tab bar section
+                window.draw_tab_bar(ui);
 
-            // Content panel section
-            ui.allocate_ui_with_layout(
-                egui::vec2(ui.available_width(), ui.available_height()),
-                egui::Layout::top_down(egui::Align::LEFT),
-                |ui| {
-                    if let Some(active_tab) = self.windows[0].tabs.get(self.windows[0].active_tab) {
-                        // Display the HTML content of the active tab
+                // Content panel section
+                ui.allocate_ui_with_layout(
+                    egui::vec2(ui.available_width(), ui.available_height()),
+                    egui::Layout::top_down(egui::Align::LEFT),
+                    |ui| {
+                        let active_tab = window.get_active_tab().expect("No active tab found");
                         ui.label(&active_tab.content);
-                        // Later you might want to use a proper HTML renderer here
-                    }
-                },
-            );
+                        // TODO: Add a proper HTML renderer here
+                    },
+                );
+            }
         });
     }
 }

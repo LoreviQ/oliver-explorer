@@ -9,29 +9,20 @@ use crate::ui::tab::TabAction;
 impl state::Window {
     // Show the tab bar returns the index of the active tab
     pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) {
+        let mut action_and_tab = None;
+
         let original_spacing = ui.spacing().item_spacing;
         ui.spacing_mut().item_spacing.x = self.settings.theme.frame.spacing;
-
         ui.horizontal(|ui| {
             // Tab bar height
             ui.set_min_height(self.settings.theme.frame.tab.height);
 
             // Tab items
             let tab_width = self.calculate_tab_width(ui);
-            for (index, tab) in self.tabs.iter().enumerate() {
-                let action = tab.draw_tab(ui, index == self.active_tab, tab_width);
-
-                // Handle the action
-                match action {
-                    Some(TabAction::Select) => {
-                        self.active_tab = index;
-                    }
-                    Some(TabAction::Close) => {
-                        self.close_tab(index);
-                        // Break out of the loop since we modified the tabs collection
-                        break;
-                    }
-                    None => {}
+            for tab in &mut self.tabs {
+                let action = tab.draw_tab(ui, tab_width);
+                if let Some(action) = action {
+                    action_and_tab = Some((action, tab.id));
                 }
             }
 
@@ -42,6 +33,20 @@ impl state::Window {
             }
         });
         ui.spacing_mut().item_spacing = original_spacing;
+
+        // Handle window level action
+        if let Some((action, tab_id)) = action_and_tab {
+            match action {
+                TabAction::Select => {
+                    self.set_active_tab(tab_id);
+                }
+                TabAction::Close => {
+                    if let Err(e) = self.close_tab(tab_id) {
+                        eprintln!("Error closing tab: {}", e);
+                    }
+                }
+            }
+        }
     }
 
     // Calculate tab width based on available space
@@ -52,31 +57,6 @@ impl state::Window {
         let spacing_width = tab_count * self.settings.theme.frame.spacing;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
         width_per_tab.min(self.settings.theme.frame.tab.width.max)
-    }
-
-    // Close a tab at the given index
-    fn close_tab(&mut self, index: usize) {
-        if self.tabs.len() <= 1 {
-            // If this is the last tab, request application to close
-            std::process::exit(0);
-        } else {
-            self.tabs.remove(index);
-
-            // Adjust active_tab if necessary
-            if index <= self.active_tab {
-                if index == self.active_tab {
-                    // If we closed the active tab
-                    if index == self.tabs.len() {
-                        // If it was the last tab, activate the new last tab
-                        self.active_tab = self.tabs.len() - 1;
-                    }
-                    // Otherwise active_tab stays the same (points to the next tab)
-                } else {
-                    // If we closed a tab before the active tab, decrement active_tab
-                    self.active_tab -= 1;
-                }
-            }
-        }
     }
 }
 

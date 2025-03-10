@@ -12,13 +12,13 @@ pub enum TabAction {
 }
 
 impl state::Tab {
-    pub fn draw_tab(&self, ui: &mut egui::Ui, is_active: bool, width: f32) -> Option<TabAction> {
+    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> Option<TabAction> {
         let mut action = None;
 
         let tab_name = self.url.clone();
 
         // Get the background fill and stroke color for the tab
-        let (bg_fill, stroke_color) = if is_active {
+        let (bg_fill, stroke_color) = if self.is_active() {
             (
                 self.settings.theme.active.background,
                 self.settings.theme.active.text,
