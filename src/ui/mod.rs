@@ -1,4 +1,5 @@
-mod components;
+mod tab;
+mod window;
 
 use crate::state;
 use eframe::egui;
