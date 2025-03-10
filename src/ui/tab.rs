@@ -4,15 +4,10 @@ use eframe::egui;
 use eframe::epaint::Margin;
 
 use crate::state;
-
-// Enum for tab actions to be returned to window
-pub enum TabAction {
-    Select,
-    Close,
-}
+use crate::ui::window::WindowAction;
 
 impl state::Tab {
-    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> Option<TabAction> {
+    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> Option<WindowAction> {
         let mut action = None;
 
         let tab_name = self.url.clone();
@@ -85,7 +80,7 @@ impl state::Tab {
                         }
 
                         if response.clicked() {
-                            action = Some(TabAction::Close);
+                            action = Some(WindowAction::CloseTab(self.id));
                         }
                     });
                 })
@@ -94,7 +89,7 @@ impl state::Tab {
 
         // If the tab was clicked and we haven't already set an action, set it to Select
         if response.clicked() && matches!(action, None) {
-            action = Some(TabAction::Select);
+            action = Some(WindowAction::SelectTab(self.id));
         }
 
         action

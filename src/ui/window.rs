@@ -3,14 +3,27 @@
 use eframe::egui;
 
 use crate::state;
-use crate::ui::tab::TabAction;
+
+// Actions to be executed at window level
+pub enum WindowAction {
+    SelectTab(usize),
+    CloseTab(usize),
+}
 
 // Tab bar component
 impl state::Window {
+    // Draws all window level elements and executes actions
+    pub fn update(&mut self, _: &egui::Context, ui: &mut egui::Ui) {
+        if let Some(action) = self.draw_tab_bar(ui) {
+            self.execute_action(action);
+        }
+        if let Some(action) = self.draw_content(ui) {
+            self.execute_action(action);
+        }
+    }
     // Show the tab bar returns the index of the active tab
-    pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) {
-        let mut action_and_tab = None;
-
+    pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
+        let mut action = None;
         let original_spacing = ui.spacing().item_spacing;
         ui.spacing_mut().item_spacing.x = self.settings.theme.frame.spacing;
         ui.horizontal(|ui| {
@@ -20,10 +33,7 @@ impl state::Window {
             // Tab items
             let tab_width = self.calculate_tab_width(ui);
             for tab in &mut self.tabs {
-                let action = tab.draw_tab(ui, tab_width);
-                if let Some(action) = action {
-                    action_and_tab = Some((action, tab.id));
-                }
+                action = tab.draw_tab(ui, tab_width);
             }
 
             // New tab button
@@ -33,20 +43,7 @@ impl state::Window {
             }
         });
         ui.spacing_mut().item_spacing = original_spacing;
-
-        // Handle window level action
-        if let Some((action, tab_id)) = action_and_tab {
-            match action {
-                TabAction::Select => {
-                    self.set_active_tab(tab_id);
-                }
-                TabAction::Close => {
-                    if let Err(e) = self.close_tab(tab_id) {
-                        eprintln!("Error closing tab: {}", e);
-                    }
-                }
-            }
-        }
+        action
     }
 
     // Calculate tab width based on available space
@@ -57,6 +54,35 @@ impl state::Window {
         let spacing_width = tab_count * self.settings.theme.frame.spacing;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
         width_per_tab.min(self.settings.theme.frame.tab.width.max)
+    }
+
+    // Draws the content of the active tab
+    fn draw_content(&self, ui: &mut egui::Ui) -> Option<WindowAction> {
+        let action = None;
+        ui.allocate_ui_with_layout(
+            egui::vec2(ui.available_width(), ui.available_height()),
+            egui::Layout::top_down(egui::Align::LEFT),
+            |ui| {
+                let active_tab = self.get_active_tab().expect("No active tab found");
+                ui.label(&active_tab.content);
+                // TODO: Add a proper HTML renderer here
+            },
+        );
+        action
+    }
+
+    // Executes the action at the window level
+    fn execute_action(&mut self, action: WindowAction) {
+        match action {
+            WindowAction::SelectTab(tab_id) => {
+                self.set_active_tab(tab_id);
+            }
+            WindowAction::CloseTab(tab_id) => {
+                if let Err(e) = self.close_tab(tab_id) {
+                    eprintln!("Error closing tab: {}", e);
+                }
+            }
+        }
     }
 }
 
