@@ -1,70 +1,55 @@
-use crate::ui::config;
-use crate::ui::theme;
-use crate::ui::types;
-
 use eframe::egui;
 use eframe::epaint::Margin;
 
+use crate::state;
+
 // Tab bar component
-pub struct TabBar<'a> {
-    pub active_tab: usize,
-    pub tabs: &'a mut Vec<types::Tab>,
-}
-
-impl<'a> TabBar<'a> {
-    // Create a new tab bar
-    pub fn new(active_tab: usize, tabs: &'a mut Vec<types::Tab>) -> Self {
-        Self { active_tab, tabs }
-    }
-
+impl state::Window {
     // Show the tab bar returns the index of the active tab
-    pub fn show(&mut self, ui: &mut egui::Ui, theme: &theme::Theme) -> usize {
+    pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) {
         let original_spacing = ui.spacing().item_spacing;
-        ui.spacing_mut().item_spacing.x = theme.frame.spacing;
+        ui.spacing_mut().item_spacing.x = self.settings.theme.frame.spacing;
 
         ui.horizontal(|ui| {
             // Tab bar height
-            ui.set_min_height(theme.frame.tab.height);
+            ui.set_min_height(self.settings.theme.frame.tab.height);
 
             // Tab items
-            let tab_width = self.calculate_tab_width(ui, theme);
+            let tab_width = self.calculate_tab_width(ui);
             for (index, tab) in self.tabs.iter().enumerate() {
-                let action = TabItem::new(tab, self.active_tab == index, tab_width).show(ui, theme);
+                let action = tab.draw_tab(ui, index == self.active_tab, tab_width);
 
                 // Handle the action
                 match action {
-                    TabAction::Select => {
+                    Some(TabAction::Select) => {
                         self.active_tab = index;
                     }
-                    TabAction::Close => {
+                    Some(TabAction::Close) => {
                         self.close_tab(index);
                         // Break out of the loop since we modified the tabs collection
                         break;
                     }
-                    TabAction::None => {}
+                    None => {}
                 }
             }
 
             // New tab button
             let plus_button = plus_button(ui);
             if plus_button.clicked() {
-                self.tabs.push(types::Tab::new(config::DEFAULT_URL));
-                self.active_tab = self.tabs.len() - 1;
+                self.new_tab();
             }
         });
         ui.spacing_mut().item_spacing = original_spacing;
-
-        self.active_tab
     }
 
     // Calculate tab width based on available space
-    fn calculate_tab_width(&self, ui: &mut egui::Ui, theme: &theme::Theme) -> f32 {
+    fn calculate_tab_width(&self, ui: &mut egui::Ui) -> f32 {
         let tab_count = self.tabs.len() as f32;
         let available_width = ui.available_width();
         let plus_button_width = ui.available_size().y;
-        let spacing_width = tab_count * theme.frame.spacing;
+        let spacing_width = tab_count * self.settings.theme.frame.spacing;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
-        width_per_tab.min(theme.frame.tab.width.max)
+        width_per_tab.min(self.settings.theme.frame.tab.width.max)
     }
 
     // Close a tab at the given index
@@ -95,52 +80,40 @@ impl<'a> TabBar<'a> {
 
 // Define an enum for tab actions
 pub enum TabAction {
-    None,
     Select,
     Close,
 }
 
-// Tab item component
-pub struct TabItem<'a> {
-    pub tab: &'a types::Tab,
-    pub is_active: bool,
-    pub width: f32,
-}
+impl state::Tab {
+    pub fn draw_tab(&self, ui: &mut egui::Ui, is_active: bool, width: f32) -> Option<TabAction> {
+        let mut action = None;
 
-impl<'a> TabItem<'a> {
-    // Create a new tab item
-    pub fn new(tab: &'a types::Tab, is_active: bool, width: f32) -> Self {
-        Self {
-            tab,
-            is_active,
-            width,
-        }
-    }
-
-    // Show the tab item and return the action
-    pub fn show(&self, ui: &mut egui::Ui, theme: &theme::Theme) -> TabAction {
-        let mut action = TabAction::None;
-        let url = self.tab.get_url();
-        let tab_name = url.clone();
+        let tab_name = self.url.clone();
 
         // Get the background fill and stroke color for the tab
-        let (bg_fill, stroke_color) = if self.is_active {
-            (theme.active.background, theme.active.text)
+        let (bg_fill, stroke_color) = if is_active {
+            (
+                self.settings.theme.active.background,
+                self.settings.theme.active.text,
+            )
         } else {
-            (theme.inactive.background, theme.inactive.text)
+            (
+                self.settings.theme.inactive.background,
+                self.settings.theme.inactive.text,
+            )
         };
 
         // Create a frame for the tab with fixed width and padding
         let frame = egui::Frame::new()
             .fill(bg_fill)
             .inner_margin(Margin::symmetric(
-                theme.frame.padding as i8,
-                theme.frame.padding as i8,
+                self.settings.theme.frame.padding as i8,
+                self.settings.theme.frame.padding as i8,
             ));
 
         let response = frame
             .show(ui, |ui| {
-                ui.set_width(self.width - (theme.frame.padding * 2.0));
+                ui.set_width(width - (self.settings.theme.frame.padding * 2.0));
 
                 // Use horizontal layout to place label and close button side by side
                 ui.horizontal(|ui| {
@@ -149,7 +122,7 @@ impl<'a> TabItem<'a> {
                         egui::Label::new(
                             egui::RichText::new(tab_name)
                                 .color(stroke_color)
-                                .size(theme.frame.text_size),
+                                .size(self.settings.theme.frame.text_size),
                         )
                         .truncate(),
                     );
@@ -160,7 +133,7 @@ impl<'a> TabItem<'a> {
                         let close_button = egui::Button::new(
                             egui::RichText::new("×")
                                 .color(stroke_color)
-                                .size(theme.frame.text_size),
+                                .size(self.settings.theme.frame.text_size),
                         )
                         .frame(false); // Remove button background/frame
 
@@ -172,20 +145,20 @@ impl<'a> TabItem<'a> {
                             ui.painter().rect_filled(
                                 hover_rect,
                                 4.0, // Rounded corners radius
-                                theme.general.hover,
+                                self.settings.theme.general.hover,
                             );
                             // Redraw the text on top of the background
                             ui.painter().text(
                                 hover_rect.center(),
                                 egui::Align2::CENTER_CENTER,
                                 "×",
-                                egui::FontId::proportional(theme.frame.text_size),
+                                egui::FontId::proportional(self.settings.theme.frame.text_size),
                                 stroke_color,
                             );
                         }
 
                         if response.clicked() {
-                            action = TabAction::Close;
+                            action = Some(TabAction::Close);
                         }
                     });
                 })
@@ -193,8 +166,8 @@ impl<'a> TabItem<'a> {
             .response;
 
         // If the tab was clicked and we haven't already set an action, set it to Select
-        if response.clicked() && matches!(action, TabAction::None) {
-            action = TabAction::Select;
+        if response.clicked() && matches!(action, None) {
+            action = Some(TabAction::Select);
         }
 
         action
