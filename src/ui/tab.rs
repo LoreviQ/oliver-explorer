@@ -38,52 +38,62 @@ impl state::Tab {
                 ui.set_width(width - (self.settings.theme.frame.padding * 2.0));
 
                 // Use horizontal layout to place label and close button side by side
-                ui.horizontal(|ui| {
-                    // Tab label with truncation - make it take most of the space
-                    ui.add(
-                        egui::Label::new(
-                            egui::RichText::new(tab_name)
-                                .color(stroke_color)
-                                .size(self.settings.theme.frame.text_size),
-                        )
-                        .truncate(),
-                    );
+                let content_response = ui
+                    .horizontal(|ui| {
+                        // Tab label with truncation - make it take most of the space
+                        let label_response = ui.add(
+                            egui::Label::new(
+                                egui::RichText::new(tab_name)
+                                    .color(stroke_color)
+                                    .size(self.settings.theme.frame.text_size),
+                            )
+                            .truncate(),
+                        );
 
-                    // Add flexible space to push the close button to the right
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        // Close (X) button with transparent background
-                        let close_button = egui::Button::new(
-                            egui::RichText::new("×")
-                                .color(stroke_color)
-                                .size(self.settings.theme.frame.text_size),
-                        )
-                        .frame(false); // Remove button background/frame
+                        // Add flexible space to push the close button to the right
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            // Close (X) button with transparent background
+                            let close_button = egui::Button::new(
+                                egui::RichText::new("×")
+                                    .color(stroke_color)
+                                    .size(self.settings.theme.frame.text_size),
+                            )
+                            .frame(false); // Remove button background/frame
 
-                        let response = ui.add_sized([16.0, 16.0], close_button);
+                            let response = ui.add_sized([16.0, 16.0], close_button);
 
-                        // Add hover effect - show background when hovered
-                        if response.hovered() {
-                            let hover_rect = response.rect;
-                            ui.painter().rect_filled(
-                                hover_rect,
-                                4.0, // Rounded corners radius
-                                self.settings.theme.general.hover,
-                            );
-                            // Redraw the text on top of the background
-                            ui.painter().text(
-                                hover_rect.center(),
-                                egui::Align2::CENTER_CENTER,
-                                "×",
-                                egui::FontId::proportional(self.settings.theme.frame.text_size),
-                                stroke_color,
-                            );
-                        }
+                            // Add hover effect - show background when hovered
+                            if response.hovered() {
+                                let hover_rect = response.rect;
+                                ui.painter().rect_filled(
+                                    hover_rect,
+                                    4.0, // Rounded corners radius
+                                    self.settings.theme.general.hover,
+                                );
+                                // Redraw the text on top of the background
+                                ui.painter().text(
+                                    hover_rect.center(),
+                                    egui::Align2::CENTER_CENTER,
+                                    "×",
+                                    egui::FontId::proportional(self.settings.theme.frame.text_size),
+                                    stroke_color,
+                                );
+                            }
 
-                        if response.clicked() {
-                            action = Some(WindowAction::CloseTab(self.id));
-                        }
-                    });
-                })
+                            if response.clicked() {
+                                action = Some(WindowAction::CloseTab(self.id));
+                            }
+                        });
+
+                        // Return the label response so we can check if it was clicked
+                        label_response
+                    })
+                    .inner;
+
+                // If the label was clicked, set the action to SelectTab
+                if content_response.clicked() {
+                    action = Some(WindowAction::SelectTab(self.id));
+                }
             })
             .response;
 
@@ -91,7 +101,6 @@ impl state::Tab {
         if response.clicked() && matches!(action, None) {
             action = Some(WindowAction::SelectTab(self.id));
         }
-
         action
     }
 }

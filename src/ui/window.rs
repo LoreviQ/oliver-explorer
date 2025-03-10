@@ -5,6 +5,7 @@ use eframe::egui;
 use crate::state;
 
 // Actions to be executed at window level
+#[derive(Debug)]
 pub enum WindowAction {
     SelectTab(usize),
     CloseTab(usize),
