@@ -5,6 +5,7 @@ use std::sync::Arc;
 pub struct Window {
     pub tabs: Vec<Tab>,
     pub settings: Arc<AppSettings>,
+    next_tab_id: usize,
 }
 
 impl Window {
@@ -13,6 +14,7 @@ impl Window {
         Self {
             tabs: vec![default_tab],
             settings,
+            next_tab_id: 1,
         }
     }
 
@@ -20,8 +22,9 @@ impl Window {
         for tab in &mut self.tabs {
             tab.set_state(TabState::Inactive);
         }
-        let new_tab = Tab::new(self.tabs.len(), Arc::clone(&self.settings));
+        let new_tab = Tab::new(self.next_tab_id, Arc::clone(&self.settings));
         self.tabs.push(new_tab);
+        self.next_tab_id += 1;
     }
 
     pub fn set_active_tab(&mut self, id: usize) {
