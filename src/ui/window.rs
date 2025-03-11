@@ -15,16 +15,20 @@ pub enum WindowAction {
 impl state::Window {
     // Draws all window level elements and executes actions
     pub fn update(&mut self, _: &egui::Context, ui: &mut egui::Ui) {
-        if let Some(action) = self.draw_tab_bar(ui) {
-            self.execute_action(action);
-        }
-        if let Some(action) = self.draw_content(ui) {
+        // Draw content and collect actions
+        let mut action = None;
+        action = self.draw_tab_bar(ui).or(action);
+        action = self.draw_content(ui).or(action);
+
+        // Execute actions
+        if let Some(action) = action {
             self.execute_action(action);
         }
     }
     // Show the tab bar returns the index of the active tab
     pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let mut action = None;
+
         let original_spacing = ui.spacing().item_spacing;
         ui.spacing_mut().item_spacing.x = self.settings.theme.frame.spacing;
         ui.horizontal(|ui| {
@@ -34,7 +38,9 @@ impl state::Window {
             // Tab items
             let tab_width = self.calculate_tab_width(ui);
             for tab in &mut self.tabs {
-                action = tab.draw_tab(ui, tab_width);
+                if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
+                    action = Some(tab_action);
+                }
             }
 
             // New tab button
@@ -44,6 +50,8 @@ impl state::Window {
             }
         });
         ui.spacing_mut().item_spacing = original_spacing;
+
+        // Return the action
         action
     }
 

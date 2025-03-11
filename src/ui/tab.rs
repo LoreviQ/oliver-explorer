@@ -101,6 +101,8 @@ impl state::Tab {
         if response.clicked() && matches!(action, None) {
             action = Some(WindowAction::SelectTab(self.id));
         }
+
+        // Return the action
         action
     }
 }
