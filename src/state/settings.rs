@@ -1,5 +1,6 @@
 use crate::state::theme::Theme;
 
+#[derive(Debug)]
 pub struct AppSettings {
     pub title: String,
     pub default_url: String,

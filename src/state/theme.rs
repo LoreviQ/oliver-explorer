@@ -2,6 +2,7 @@ use eframe::egui::Color32;
 use std::sync::RwLock;
 
 // Define a struct to hold all theme values
+#[derive(Debug)]
 pub struct Theme {
     pub general: ThemeDetails,
     pub active: ThemeDetails,
@@ -9,12 +10,14 @@ pub struct Theme {
     pub frame: FrameDetails,
 }
 
+#[derive(Debug)]
 pub struct ThemeDetails {
     pub background: Color32,
     pub text: Color32,
     pub hover: Color32,
 }
 
+#[derive(Debug)]
 pub struct FrameDetails {
     pub text_size: f32,
     pub spacing: f32,
@@ -22,11 +25,13 @@ pub struct FrameDetails {
     pub tab: TabDetails,
 }
 
+#[derive(Debug)]
 pub struct TabDetails {
     pub width: MinMax,
     pub height: f32,
 }
 
+#[derive(Debug)]
 pub struct MinMax {
     pub min: f32,
     pub max: f32,

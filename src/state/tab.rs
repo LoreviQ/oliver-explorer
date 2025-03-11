@@ -9,6 +9,7 @@ pub enum TabState {
     Inactive,
 }
 
+#[derive(Debug)]
 pub struct Tab {
     pub id: usize,
     pub url: String,
