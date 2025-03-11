@@ -19,7 +19,6 @@ pub struct ThemeDetails {
 #[derive(Debug)]
 pub struct FrameDetails {
     pub text_size: f32,
-    pub spacing: f32,
     pub padding: f32,
     pub toolbar_height: f32,
     pub tab: TabDetails,
@@ -52,7 +51,6 @@ impl Default for Theme {
             },
             frame: FrameDetails {
                 text_size: 12.0,
-                spacing: 4.0,
                 padding: 8.0,
                 toolbar_height: 50.0,
                 tab: TabDetails {
@@ -112,7 +110,6 @@ impl Clone for FrameDetails {
     fn clone(&self) -> Self {
         Self {
             text_size: self.text_size,
-            spacing: self.spacing,
             padding: self.padding,
             toolbar_height: self.toolbar_height,
             tab: self.tab.clone(),

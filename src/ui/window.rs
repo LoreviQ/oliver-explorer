@@ -29,7 +29,10 @@ impl state::Window {
         let mut action = None;
         let frame = egui::Frame::new()
             .fill(self.settings.theme.general.background)
-            .inner_margin(egui::Margin::ZERO);
+            .inner_margin(egui::Margin::symmetric(
+                self.settings.theme.frame.padding as i8,
+                self.settings.theme.frame.padding as i8,
+            ));
 
         frame.show(ui, |ui| {
             // Fixed height for the tab bar
@@ -39,6 +42,8 @@ impl state::Window {
 
             // Horizontal layout of tabs and new tab button
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                ui.spacing_mut().item_spacing.x = self.settings.theme.frame.padding;
+
                 // Tab items
                 let tab_width = self.calculate_tab_width(ui);
                 for tab in &mut self.tabs {
@@ -64,7 +69,7 @@ impl state::Window {
         let tab_count = self.tabs.len() as f32;
         let available_width = ui.available_width();
         let plus_button_width = ui.available_size().y;
-        let spacing_width = tab_count * self.settings.theme.frame.spacing;
+        let spacing_width = tab_count * self.settings.theme.frame.padding;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
         width_per_tab.min(self.settings.theme.frame.tab.width.max)
     }
