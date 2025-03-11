@@ -91,16 +91,14 @@ impl state::Window {
                     // Calculate width for the centered search input
                     let available_width = ui.available_width();
                     let search_width = available_width * 0.6; // Use 60% of available width
+                    let search_height = self.settings.theme.frame.toolbar_height
+                        - self.settings.theme.frame.padding * 2.0;
                     let padding = (available_width - search_width) / 2.0;
+                    let text_color = self.settings.theme.general.text;
+                    let bg_color = self.settings.theme.general.background;
 
                     // Add left padding
                     ui.add_space(padding);
-
-                    // Add the search text field with rounded corners
-                    let (text_color, bg_color) = (
-                        self.settings.theme.general.text,
-                        self.settings.theme.general.background,
-                    );
                     let active_tab = self.get_active_tab_mut().expect("No active tab found");
                     let text_edit = egui::TextEdit::singleline(&mut active_tab.search_buffer)
                         .hint_text("Search...")
@@ -108,9 +106,7 @@ impl state::Window {
                         .text_color(text_color)
                         .background_color(bg_color);
 
-                    let _ = ui.add(text_edit);
-
-                    // Add right padding to complete the layout
+                    let _ = ui.add_sized([search_width, search_height], text_edit);
                     ui.add_space(padding);
                 });
             });

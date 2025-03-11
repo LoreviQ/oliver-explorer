@@ -52,7 +52,7 @@ impl Default for Theme {
             frame: FrameDetails {
                 text_size: 12.0,
                 padding: 8.0,
-                toolbar_height: 50.0,
+                toolbar_height: 40.0,
                 tab: TabDetails {
                     width: MinMax {
                         min: 40.0,
