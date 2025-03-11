@@ -24,3 +24,40 @@ impl OliverExplorer {
         self.windows.push(new_window);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_initialization() {
+        // Create a default app instance
+        let app = OliverExplorer::default();
+        assert_eq!(app.windows.len(), 1);
+        assert!(Arc::strong_count(&app.settings) >= 2);
+    }
+
+    #[test]
+    fn test_adding_windows() {
+        // Create a default app instance
+        let mut app = OliverExplorer::default();
+        assert_eq!(app.windows.len(), 1);
+
+        // Add a new window
+        app.new_window();
+        assert_eq!(app.windows.len(), 2);
+
+        // Add another window
+        app.new_window();
+        assert_eq!(app.windows.len(), 3);
+
+        // Verify that all windows share the same settings
+        let settings_ptr = Arc::as_ptr(&app.settings);
+        for window in &app.windows {
+            assert_eq!(Arc::as_ptr(&window.settings), settings_ptr);
+        }
+
+        // The reference count should be at least 4 (1 for app + 3 for windows)
+        assert!(Arc::strong_count(&app.settings) >= 4);
+    }
+}
