@@ -21,13 +21,13 @@ pub struct FrameDetails {
     pub text_size: f32,
     pub spacing: f32,
     pub padding: f32,
+    pub toolbar_height: f32,
     pub tab: TabDetails,
 }
 
 #[derive(Debug)]
 pub struct TabDetails {
     pub width: MinMax,
-    pub height: f32,
 }
 
 #[derive(Debug)]
@@ -54,12 +54,12 @@ impl Default for Theme {
                 text_size: 12.0,
                 spacing: 4.0,
                 padding: 8.0,
+                toolbar_height: 50.0,
                 tab: TabDetails {
                     width: MinMax {
                         min: 40.0,
                         max: 200.0,
                     },
-                    height: 30.0,
                 },
             },
         }
@@ -114,6 +114,7 @@ impl Clone for FrameDetails {
             text_size: self.text_size,
             spacing: self.spacing,
             padding: self.padding,
+            toolbar_height: self.toolbar_height,
             tab: self.tab.clone(),
         }
     }
@@ -123,7 +124,6 @@ impl Clone for TabDetails {
     fn clone(&self) -> Self {
         Self {
             width: self.width.clone(),
-            height: self.height,
         }
     }
 }

@@ -15,54 +15,45 @@ pub enum WindowAction {
 impl state::Window {
     // Draws all window level elements and executes actions
     pub fn update(&mut self, _: &egui::Context, ui: &mut egui::Ui) {
-        // Draw content and collect actions
-        let mut action = None;
-        action = self.draw_tab_bar(ui).or(action);
-        action = self.draw_search_bar(ui).or(action);
-        action = self.draw_content(ui).or(action);
-
-        // Execute actions
-        if let Some(action) = action {
-            self.execute_action(action);
-        }
+        // Vertical layout without spacing
+        ui.vertical(|ui| {
+            ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
+            self.draw_and_execute(ui, |s, ui| s.draw_tab_bar(ui));
+            self.draw_and_execute(ui, |s, ui| s.draw_search_bar(ui));
+            self.draw_and_execute(ui, |s, ui| s.draw_content(ui));
+        });
     }
+
     // Show the tab bar returns the index of the active tab
     pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let mut action = None;
+        let frame = egui::Frame::new()
+            .fill(self.settings.theme.general.background)
+            .inner_margin(egui::Margin::ZERO);
 
-        let original_spacing = ui.spacing().item_spacing;
-        ui.spacing_mut().item_spacing.x = self.settings.theme.frame.spacing;
+        frame.show(ui, |ui| {
+            // Fixed height for the tab bar
+            ui.set_min_height(self.settings.theme.frame.toolbar_height);
+            ui.set_max_height(self.settings.theme.frame.toolbar_height);
+            ui.set_min_width(ui.available_width());
 
-        // Apply general background color to tab bar
-        let tab_bar_rect = egui::Rect::from_min_size(
-            ui.cursor().min,
-            egui::vec2(ui.available_width(), self.settings.theme.frame.tab.height),
-        );
-        ui.painter().rect_filled(
-            tab_bar_rect,
-            0.0, // No rounding
-            self.settings.theme.general.background,
-        );
-
-        ui.horizontal(|ui| {
-            // Tab bar height
-            ui.set_min_height(self.settings.theme.frame.tab.height);
-
-            // Tab items
-            let tab_width = self.calculate_tab_width(ui);
-            for tab in &mut self.tabs {
-                if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
-                    action = Some(tab_action);
+            // Horizontal layout of tabs and new tab button
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                // Tab items
+                let tab_width = self.calculate_tab_width(ui);
+                for tab in &mut self.tabs {
+                    if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
+                        action = Some(tab_action);
+                    }
                 }
-            }
 
-            // New tab button
-            let plus_button = plus_button(ui);
-            if plus_button.clicked() {
-                self.new_tab();
-            }
+                // New tab button
+                let plus_button = plus_button(ui);
+                if plus_button.clicked() {
+                    self.new_tab();
+                }
+            });
         });
-        ui.spacing_mut().item_spacing = original_spacing;
 
         // Return the action
         action
@@ -81,45 +72,40 @@ impl state::Window {
     // Draw the search bar
     fn draw_search_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let action = None;
-        let theme = self.settings.theme.clone();
-        let active_tab = self.get_active_tab_mut().expect("No active tab found");
+        egui::Frame::new()
+            .fill(self.settings.theme.accent.background)
+            .inner_margin(egui::Margin::ZERO)
+            .show(ui, |ui| {
+                // Fixed height for search bar
+                ui.set_min_height(self.settings.theme.frame.toolbar_height);
+                ui.set_max_height(self.settings.theme.frame.toolbar_height);
+                ui.set_min_width(ui.available_width());
 
-        // Apply accent background color to search bar area
-        let search_bar_height = 30.0;
-        let search_bar_rect = egui::Rect::from_min_size(
-            ui.cursor().min,
-            egui::vec2(ui.available_width(), search_bar_height),
-        );
-        ui.painter().rect_filled(
-            search_bar_rect,
-            0.0, // No rounding
-            theme.accent.background,
-        );
+                // Full width container
+                ui.horizontal(|ui| {
+                    // Calculate width for the centered search input
+                    let available_width = ui.available_width();
+                    let search_width = available_width * 0.6; // Use 60% of available width
+                    let padding = (available_width - search_width) / 2.0;
 
-        // Full width container
-        ui.horizontal(|ui| {
-            ui.set_min_height(search_bar_height);
+                    // Add left padding
+                    ui.add_space(padding);
 
-            // Calculate width for the centered search input
-            let available_width = ui.available_width();
-            let search_width = available_width * 0.6; // Use 60% of available width
-            let padding = (available_width - search_width) / 2.0;
+                    // Add the search text field with rounded corners
+                    let theme = self.settings.theme.clone();
+                    let active_tab = self.get_active_tab_mut().expect("No active tab found");
+                    let text_edit = egui::TextEdit::singleline(&mut active_tab.search_buffer)
+                        .hint_text("Search...")
+                        .desired_width(search_width)
+                        .text_color(theme.general.text)
+                        .background_color(theme.general.background);
 
-            // Add left padding
-            ui.add_space(padding);
+                    let _ = ui.add(text_edit);
 
-            // Add the search text field with rounded corners
-            let text_edit = egui::TextEdit::singleline(&mut active_tab.search_buffer)
-                .hint_text("Search...")
-                .desired_width(search_width)
-                .text_color(theme.general.text)
-                .background_color(theme.general.background);
-
-            let _ = ui.add(text_edit);
-
-            // Add right padding to complete the layout
-            ui.add_space(padding);
-        });
+                    // Add right padding to complete the layout
+                    ui.add_space(padding);
+                });
+            });
 
         action
     }
@@ -128,21 +114,15 @@ impl state::Window {
     fn draw_content(&self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let action = None;
 
-        // Apply general background color to content area
-        let content_rect = egui::Rect::from_min_size(
-            ui.cursor().min,
-            egui::vec2(ui.available_width(), ui.available_height()),
-        );
-        ui.painter().rect_filled(
-            content_rect,
-            0.0, // No rounding
-            self.settings.theme.general.background,
-        );
+        // Use Frame for consistent styling
+        egui::Frame::new()
+            .fill(self.settings.theme.general.background)
+            .inner_margin(egui::Margin::ZERO)
+            .show(ui, |ui| {
+                // Take all available remaining height
+                ui.set_min_height(ui.available_height());
+                ui.set_min_width(ui.available_width());
 
-        ui.allocate_ui_with_layout(
-            egui::vec2(ui.available_width(), ui.available_height()),
-            egui::Layout::top_down(egui::Align::LEFT),
-            |ui| {
                 // Set text color for content
                 let text_color = self.settings.theme.general.text;
                 ui.visuals_mut().override_text_color = Some(text_color);
@@ -150,13 +130,20 @@ impl state::Window {
                 let active_tab = self.get_active_tab().expect("No active tab found");
                 ui.label(&active_tab.content);
                 // TODO: Add a proper HTML renderer here
-            },
-        );
+            });
+
         action
     }
 
-    // Executes the action at the window level
-    fn execute_action(&mut self, action: WindowAction) {
+    // draws content from the draw_fn and executes any resulting actions
+    fn draw_and_execute<F>(&mut self, ui: &mut egui::Ui, draw_fn: F)
+    where
+        F: FnOnce(&mut Self, &mut egui::Ui) -> Option<WindowAction>,
+    {
+        let Some(action) = draw_fn(self, ui) else {
+            return;
+        };
+
         match action {
             WindowAction::SelectTab(tab_id) => {
                 self.set_active_tab(tab_id);
