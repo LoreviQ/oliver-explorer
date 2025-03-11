@@ -1,8 +1,5 @@
-mod html;
-mod networking;
-mod state;
-mod ui;
+use oliver_explorer;
 
 pub fn main() -> eframe::Result<()> {
-    ui::start_browser()
+    oliver_explorer::start_browser()
 }
