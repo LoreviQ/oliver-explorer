@@ -82,7 +82,7 @@ impl state::Window {
                 ui.set_min_width(ui.available_width());
 
                 // Full width container
-                ui.horizontal(|ui| {
+                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     // Calculate width for the centered search input
                     let available_width = ui.available_width();
                     let search_width = available_width * 0.6; // Use 60% of available width
@@ -92,13 +92,16 @@ impl state::Window {
                     ui.add_space(padding);
 
                     // Add the search text field with rounded corners
-                    let theme = self.settings.theme.clone();
+                    let (text_color, bg_color) = (
+                        self.settings.theme.general.text,
+                        self.settings.theme.general.background,
+                    );
                     let active_tab = self.get_active_tab_mut().expect("No active tab found");
                     let text_edit = egui::TextEdit::singleline(&mut active_tab.search_buffer)
                         .hint_text("Search...")
                         .desired_width(search_width)
-                        .text_color(theme.general.text)
-                        .background_color(theme.general.background);
+                        .text_color(text_color)
+                        .background_color(bg_color);
 
                     let _ = ui.add(text_edit);
 
