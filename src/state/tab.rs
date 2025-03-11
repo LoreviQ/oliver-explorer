@@ -40,3 +40,37 @@ impl Tab {
         self.state = state;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+
+    #[test]
+    fn test_new_tab_creation() {
+        // Create a new tab
+        let settings = Arc::new(AppSettings::default());
+        let tab = Tab::new(1, Arc::clone(&settings));
+
+        // Verify the tab properties
+        assert_eq!(tab.id, 1);
+        assert_eq!(tab.url, settings.default_url);
+        assert_eq!(tab.state, TabState::Active);
+        assert!(Arc::ptr_eq(&tab.settings, &settings));
+    }
+
+    #[test]
+    fn test_is_active() {
+        // Create a mock settings object
+        let mut tab = Tab::new(1, Arc::new(AppSettings::default()));
+        assert!(tab.is_active());
+
+        // Change the state to inactive
+        tab.set_state(TabState::Inactive);
+        assert!(!tab.is_active());
+
+        // Change back to active
+        tab.set_state(TabState::Active);
+        assert!(tab.is_active());
+    }
+}
