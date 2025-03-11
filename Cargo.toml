@@ -9,3 +9,6 @@ scraper = "0.17.1"
 url = "2.4.0"
 eframe = "0.31.1"
 egui_extras = { version = "0.31.1", features = ["default", "image"] }
+
+[dev-dependencies]
+mockito = "1.7.0"

@@ -1,28 +1,58 @@
 use std::error::Error;
 
 pub fn fetch_url(url: &str) -> Result<String, Box<dyn Error>> {
-    let body = reqwest::blocking::get(url)?.text()?;
+    let response = reqwest::blocking::get(url)?;
+
+    // Check if the status code indicates success
+    if !response.status().is_success() {
+        return Err(format!("HTTP error: {}", response.status()).into());
+    }
+
+    let body = response.text()?;
     Ok(body)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockito;
+
+    fn setup_mock_server() -> (mockito::ServerGuard, mockito::Mock) {
+        let mut server = mockito::Server::new();
+        let mock = server
+            .mock("GET", "/helloworld")
+            .with_status(200)
+            .with_header("content-type", "text/html")
+            .with_body("<html><body><h1>Hello World</h1></body></html>")
+            .create();
+
+        (server, mock)
+    }
 
     #[test]
     fn test_fetch_url_success() {
-        // Note: This test depends on an external service
-        let result = fetch_url("https://httpbin.org/get");
+        // Fetch from mock server with a valid endpoint
+        let (server, mock) = setup_mock_server();
+        let endpoint = format!("{}/helloworld", server.url());
+        let result = fetch_url(&endpoint);
+
+        // Verify the request was made and successful
+        mock.assert();
         assert!(result.is_ok());
 
         if let Ok(body) = result {
-            assert!(body.contains("httpbin"));
+            assert!(body.contains("Hello World"));
         }
     }
 
     #[test]
     fn test_fetch_url_invalid_url() {
-        let result = fetch_url("https://this-does-not-exist-abcxyz.org");
+        // Fetch from mock server with an invalid endpoint
+        let (server, _) = setup_mock_server();
+        let endpoint = format!("{}/shouldfail", server.url());
+        let result = fetch_url(&endpoint);
+
+        // Verify the request was made and failed
         assert!(result.is_err());
     }
 }
