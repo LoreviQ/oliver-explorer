@@ -9,6 +9,7 @@ pub struct Window {
 }
 
 impl Window {
+    // Create a new window
     pub fn new(settings: Arc<AppSettings>) -> Self {
         let default_tab = Tab::new(0, Arc::clone(&settings));
         Self {
@@ -18,6 +19,7 @@ impl Window {
         }
     }
 
+    // Create a new tab
     pub fn new_tab(&mut self) {
         for tab in &mut self.tabs {
             tab.set_state(TabState::Inactive);
@@ -27,6 +29,7 @@ impl Window {
         self.next_tab_id += 1;
     }
 
+    // Set the active tab
     pub fn set_active_tab(&mut self, id: usize) {
         for tab in &mut self.tabs {
             match tab.id == id {
@@ -36,6 +39,7 @@ impl Window {
         }
     }
 
+    // Get a reference to the active tab
     pub fn get_active_tab(&self) -> Result<&Tab, String> {
         match self.tabs.iter().find(|tab| tab.is_active()) {
             Some(tab) => Ok(tab),
@@ -43,6 +47,15 @@ impl Window {
         }
     }
 
+    // Get a mutable reference to the active tab
+    pub fn get_active_tab_mut(&mut self) -> Result<&mut Tab, String> {
+        match self.tabs.iter_mut().find(|tab| tab.is_active()) {
+            Some(tab) => Ok(tab),
+            None => Err("No active tab found".to_string()),
+        }
+    }
+
+    // Close a tab and activate the next tab if it exists
     pub fn close_tab(&mut self, id: usize) -> Result<(), String> {
         // Find the tab to close and its index
         let Some((tab_to_close, index)) = self

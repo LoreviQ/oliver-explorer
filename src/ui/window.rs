@@ -18,6 +18,7 @@ impl state::Window {
         // Draw content and collect actions
         let mut action = None;
         action = self.draw_tab_bar(ui).or(action);
+        action = self.draw_search_bar(ui).or(action);
         action = self.draw_content(ui).or(action);
 
         // Execute actions
@@ -63,6 +64,36 @@ impl state::Window {
         let spacing_width = tab_count * self.settings.theme.frame.spacing;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
         width_per_tab.min(self.settings.theme.frame.tab.width.max)
+    }
+
+    // Draw the search bar
+    fn draw_search_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
+        let action = None;
+        let active_tab = self.get_active_tab_mut().expect("No active tab found");
+        // Full width container
+        ui.horizontal(|ui| {
+            ui.set_min_height(30.0); // Set height for the search bar area
+
+            // Calculate width for the centered search input
+            let available_width = ui.available_width();
+            let search_width = available_width * 0.6; // Use 60% of available width
+            let padding = (available_width - search_width) / 2.0;
+
+            // Add left padding
+            ui.add_space(padding);
+
+            // Add the search text field with rounded corners
+            let text_edit = egui::TextEdit::singleline(&mut active_tab.search_buffer)
+                .hint_text("Search...")
+                .desired_width(search_width);
+
+            let _ = ui.add(text_edit);
+
+            // Add right padding to complete the layout
+            ui.add_space(padding);
+        });
+
+        action
     }
 
     // Draws the content of the active tab

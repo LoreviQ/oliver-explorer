@@ -16,6 +16,7 @@ pub struct Tab {
     pub content: String,
     pub settings: Arc<AppSettings>,
     state: TabState,
+    pub search_buffer: String,
 }
 
 impl Tab {
@@ -28,6 +29,7 @@ impl Tab {
             content,
             settings,
             state: TabState::Active,
+            search_buffer: String::new(),
         }
     }
 
@@ -57,6 +59,7 @@ mod tests {
         assert_eq!(tab.url, settings.default_url);
         assert_eq!(tab.state, TabState::Active);
         assert!(Arc::ptr_eq(&tab.settings, &settings));
+        assert_eq!(tab.search_buffer, String::new());
     }
 
     #[test]
