@@ -15,13 +15,13 @@ impl state::Tab {
         // Get the background fill and stroke color for the tab
         let (bg_fill, stroke_color) = if self.is_active() {
             (
-                self.settings.theme.active.background,
-                self.settings.theme.active.text,
+                self.settings.theme.accent.background,
+                self.settings.theme.accent.text,
             )
         } else {
             (
-                self.settings.theme.inactive.background,
-                self.settings.theme.inactive.text,
+                self.settings.theme.general.background,
+                self.settings.theme.general.text,
             )
         };
 

@@ -5,8 +5,7 @@ use std::sync::RwLock;
 #[derive(Debug)]
 pub struct Theme {
     pub general: ThemeDetails,
-    pub active: ThemeDetails,
-    pub inactive: ThemeDetails,
+    pub accent: ThemeDetails,
     pub frame: FrameDetails,
 }
 
@@ -46,15 +45,10 @@ impl Default for Theme {
                 text: Color32::from_rgb(230, 230, 230),
                 hover: Color32::from_rgb(55, 55, 55),
             },
-            active: ThemeDetails {
+            accent: ThemeDetails {
                 background: Color32::from_rgb(45, 45, 45),
                 text: Color32::from_rgb(230, 230, 230),
-                hover: Color32::from_rgb(55, 55, 55),
-            },
-            inactive: ThemeDetails {
-                background: Color32::from_rgb(35, 35, 35),
-                text: Color32::from_rgb(180, 180, 180),
-                hover: Color32::from_rgb(55, 55, 55),
+                hover: Color32::from_rgb(70, 70, 70),
             },
             frame: FrameDetails {
                 text_size: 12.0,
@@ -98,8 +92,7 @@ impl Clone for Theme {
     fn clone(&self) -> Self {
         Self {
             general: self.general.clone(),
-            active: self.active.clone(),
-            inactive: self.inactive.clone(),
+            accent: self.accent.clone(),
             frame: self.frame.clone(),
         }
     }

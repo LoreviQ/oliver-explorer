@@ -32,6 +32,18 @@ impl state::Window {
 
         let original_spacing = ui.spacing().item_spacing;
         ui.spacing_mut().item_spacing.x = self.settings.theme.frame.spacing;
+
+        // Apply general background color to tab bar
+        let tab_bar_rect = egui::Rect::from_min_size(
+            ui.cursor().min,
+            egui::vec2(ui.available_width(), self.settings.theme.frame.tab.height),
+        );
+        ui.painter().rect_filled(
+            tab_bar_rect,
+            0.0, // No rounding
+            self.settings.theme.general.background,
+        );
+
         ui.horizontal(|ui| {
             // Tab bar height
             ui.set_min_height(self.settings.theme.frame.tab.height);
@@ -69,10 +81,24 @@ impl state::Window {
     // Draw the search bar
     fn draw_search_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let action = None;
+        let theme = self.settings.theme.clone();
         let active_tab = self.get_active_tab_mut().expect("No active tab found");
+
+        // Apply accent background color to search bar area
+        let search_bar_height = 30.0;
+        let search_bar_rect = egui::Rect::from_min_size(
+            ui.cursor().min,
+            egui::vec2(ui.available_width(), search_bar_height),
+        );
+        ui.painter().rect_filled(
+            search_bar_rect,
+            0.0, // No rounding
+            theme.accent.background,
+        );
+
         // Full width container
         ui.horizontal(|ui| {
-            ui.set_min_height(30.0); // Set height for the search bar area
+            ui.set_min_height(search_bar_height);
 
             // Calculate width for the centered search input
             let available_width = ui.available_width();
@@ -85,7 +111,9 @@ impl state::Window {
             // Add the search text field with rounded corners
             let text_edit = egui::TextEdit::singleline(&mut active_tab.search_buffer)
                 .hint_text("Search...")
-                .desired_width(search_width);
+                .desired_width(search_width)
+                .text_color(theme.general.text)
+                .background_color(theme.general.background);
 
             let _ = ui.add(text_edit);
 
@@ -99,10 +127,26 @@ impl state::Window {
     // Draws the content of the active tab
     fn draw_content(&self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let action = None;
+
+        // Apply general background color to content area
+        let content_rect = egui::Rect::from_min_size(
+            ui.cursor().min,
+            egui::vec2(ui.available_width(), ui.available_height()),
+        );
+        ui.painter().rect_filled(
+            content_rect,
+            0.0, // No rounding
+            self.settings.theme.general.background,
+        );
+
         ui.allocate_ui_with_layout(
             egui::vec2(ui.available_width(), ui.available_height()),
             egui::Layout::top_down(egui::Align::LEFT),
             |ui| {
+                // Set text color for content
+                let text_color = self.settings.theme.general.text;
+                ui.visuals_mut().override_text_color = Some(text_color);
+
                 let active_tab = self.get_active_tab().expect("No active tab found");
                 ui.label(&active_tab.content);
                 // TODO: Add a proper HTML renderer here
