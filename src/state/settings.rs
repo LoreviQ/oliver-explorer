@@ -16,3 +16,15 @@ impl Default for AppSettings {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_settings() {
+        let settings = AppSettings::default();
+        assert_eq!(settings.title, "Oliver Explorer");
+        assert_eq!(settings.default_url, "http://localhost:3333");
+    }
+}
