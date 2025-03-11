@@ -9,14 +9,7 @@ pub fn parse_html(html: &str) -> Result<String, Box<dyn Error>> {
         .flat_map(|element| element.text())
         .collect::<Vec<_>>()
         .join(" ");
-
-    // Normalize whitespace
-    let normalized = text_content
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ");
-
-    Ok(normalized)
+    Ok(text_content)
 }
 
 #[cfg(test)]
