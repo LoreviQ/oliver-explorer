@@ -14,6 +14,17 @@ pub fn close_button(ui: &mut egui::Ui, size: egui::Vec2, action: WindowAction) -
     WindowAction::None
 }
 
+// Plus button component
+pub fn plus_button(ui: &mut egui::Ui, size: egui::Vec2, action: WindowAction) -> WindowAction {
+    let plus_response = ui
+        .add_sized(size, egui::Button::new("+"))
+        .on_hover_text("New tab");
+    if plus_response.clicked() {
+        return action;
+    }
+    WindowAction::None
+}
+
 /*
 // Hover effect
 if close_response.hovered() {

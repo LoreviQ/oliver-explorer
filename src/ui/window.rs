@@ -111,7 +111,12 @@ impl state::Window {
             WindowAction::CloseWindow,
         )
         .execute(self, ui);
-        plus_button(ui).execute(self, ui);
+        components::plus_button(
+            ui,
+            egui::Vec2::new(ui.available_size().y, ui.available_size().y),
+            WindowAction::NewTab,
+        )
+        .execute(self, ui);
         // Tabs
         let tab_width = self.calculate_tab_width(ui);
         let mut actions = Vec::new();
@@ -197,18 +202,4 @@ impl state::Window {
                 // TODO: Add a proper HTML renderer here
             });
     }
-}
-
-// Plus button component
-fn plus_button(ui: &mut egui::Ui) -> WindowAction {
-    let plus_response = ui
-        .add_sized(
-            [ui.available_size().y, ui.available_size().y],
-            egui::Button::new("+"),
-        )
-        .on_hover_text("New tab");
-    if plus_response.clicked() {
-        return WindowAction::NewTab;
-    }
-    WindowAction::None
 }
