@@ -16,6 +16,45 @@ pub enum WindowAction {
     CloseWindow,
 }
 
+// Add execute method to WindowAction
+impl WindowAction {
+    pub fn execute(self, window: &mut state::Window, ui: &mut egui::Ui) {
+        match self {
+            // Create a new tab
+            WindowAction::NewTab => {
+                window.new_tab();
+            }
+            // Select the tab with the given id
+            WindowAction::SelectTab(tab_id) => {
+                window.set_active_tab(tab_id);
+            }
+            // Close the tab with the given id
+            WindowAction::CloseTab(tab_id) => {
+                if let Err(e) = window.close_tab(tab_id) {
+                    dbg!("Error closing tab: {}", e);
+                };
+            }
+            // Execute a search on the tab with the given id
+            WindowAction::Search(tab_id) => {
+                if let Err(e) = window.search_tab(tab_id) {
+                    dbg!("Error searching: {}", e);
+                };
+            }
+            WindowAction::ToggleMaximize => {
+                let is_maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
+                ui.ctx()
+                    .send_viewport_cmd(egui::ViewportCommand::Maximized(!is_maximized));
+            }
+            WindowAction::DragWindow => {
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
+            }
+            WindowAction::CloseWindow => {
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+        }
+    }
+}
+
 // Tab bar component
 impl state::Window {
     // Draws all window level elements and executes actions
@@ -23,9 +62,21 @@ impl state::Window {
         // Vertical layout without spacing
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
-            self.draw_and_execute(ui, |s, ui| s.draw_title_bar(ui));
-            self.draw_and_execute(ui, |s, ui| s.draw_search_bar(ui));
-            self.draw_and_execute(ui, |s, ui| s.draw_content(ui));
+
+            // Draw title bar and handle action
+            if let Some(action) = self.draw_title_bar(ui) {
+                action.execute(self, ui);
+            }
+
+            // Draw search bar and handle action
+            if let Some(action) = self.draw_search_bar(ui) {
+                action.execute(self, ui);
+            }
+
+            // Draw content and handle action (if any)
+            if let Some(action) = self.draw_content(ui) {
+                action.execute(self, ui);
+            }
         });
     }
 
@@ -160,52 +211,6 @@ impl state::Window {
             });
 
         action
-    }
-
-    // draws content from the draw_fn and executes any resulting actions
-    fn draw_and_execute<F>(&mut self, ui: &mut egui::Ui, draw_fn: F)
-    where
-        F: FnOnce(&mut Self, &mut egui::Ui) -> Option<WindowAction>,
-    {
-        // draw the component and get the action
-        let Some(action) = draw_fn(self, ui) else {
-            return;
-        };
-
-        // execute the action
-        match action {
-            // Create a new tab
-            WindowAction::NewTab => {
-                self.new_tab();
-            }
-            // Select the tab with the given id
-            WindowAction::SelectTab(tab_id) => {
-                self.set_active_tab(tab_id);
-            }
-            // Close the tab with the given id
-            WindowAction::CloseTab(tab_id) => {
-                if let Err(e) = self.close_tab(tab_id) {
-                    dbg!("Error closing tab: {}", e);
-                };
-            }
-            // Execute a search on the tab with the given id
-            WindowAction::Search(tab_id) => {
-                if let Err(e) = self.search_tab(tab_id) {
-                    dbg!("Error searching: {}", e);
-                };
-            }
-            WindowAction::ToggleMaximize => {
-                let is_maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
-                ui.ctx()
-                    .send_viewport_cmd(egui::ViewportCommand::Maximized(!is_maximized));
-            }
-            WindowAction::DragWindow => {
-                ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
-            }
-            WindowAction::CloseWindow => {
-                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
-            }
-        }
     }
 }
 
