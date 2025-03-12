@@ -45,44 +45,40 @@ impl state::Tab {
         )
         .frame(false);
 
-        let frame_response = frame.show(ui, |ui| {
-            ui.set_width(width - (self.settings.theme.frame.padding * 2.0));
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                let close_response = ui.add_sized([16.0, 16.0], close_button);
-                let label_response = ui
-                    .with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        let frame_response = frame
+            .show(ui, |ui| {
+                ui.set_width(width - (self.settings.theme.frame.padding * 2.0));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let close_response = ui.add_sized([16.0, 16.0], close_button);
+                    ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
                         ui.set_width(ui.available_width());
                         ui.add(label)
-                    })
-                    .inner;
+                    });
 
-                // Add hover effect - show background when hovered
-                if close_response.hovered() {
-                    let hover_rect = close_response.rect;
-                    ui.painter().rect_filled(
-                        hover_rect,
-                        4.0, // Rounded corners radius
-                        self.settings.theme.general.hover,
-                    );
-                    // Redraw the text on top of the background
-                    ui.painter().text(
-                        hover_rect.center(),
-                        egui::Align2::CENTER_CENTER,
-                        "×",
-                        egui::FontId::proportional(self.settings.theme.frame.text_size),
-                        stroke_color,
-                    );
-                }
-
-                if close_response.clicked() {
-                    action = Some(WindowAction::CloseTab(self.id));
-                }
-                if label_response.clicked() {
-                    action = Some(WindowAction::SelectTab(self.id));
-                }
+                    // Handle close response
+                    if close_response.hovered() {
+                        let hover_rect = close_response.rect;
+                        ui.painter().rect_filled(
+                            hover_rect,
+                            4.0, // Rounded corners radius
+                            self.settings.theme.general.hover,
+                        );
+                        ui.painter().text(
+                            hover_rect.center(),
+                            egui::Align2::CENTER_CENTER,
+                            "×",
+                            egui::FontId::proportional(self.settings.theme.frame.text_size),
+                            stroke_color,
+                        );
+                    }
+                    if close_response.clicked() {
+                        action = Some(WindowAction::CloseTab(self.id));
+                    }
+                });
             })
-        });
-        if frame_response.response.clicked() && action.is_none() {
+            .response
+            .interact(egui::Sense::click());
+        if frame_response.clicked() && action.is_none() {
             action = Some(WindowAction::SelectTab(self.id));
         }
         action
