@@ -55,6 +55,22 @@ impl Window {
         }
     }
 
+    // Get a reference to the tab with the given id
+    pub fn get_tab(&self, id: usize) -> Result<&Tab, String> {
+        match self.tabs.iter().find(|tab| tab.id == id) {
+            Some(tab) => Ok(tab),
+            None => Err("Tab not found".to_string()),
+        }
+    }
+
+    // Get a mutable reference to the tab with the given id
+    pub fn get_tab_mut(&mut self, id: usize) -> Result<&mut Tab, String> {
+        match self.tabs.iter_mut().find(|tab| tab.id == id) {
+            Some(tab) => Ok(tab),
+            None => Err("Tab not found".to_string()),
+        }
+    }
+
     // Close a tab and activate the next tab if it exists
     pub fn close_tab(&mut self, id: usize) -> Result<(), String> {
         // Find the tab to close and its index

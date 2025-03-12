@@ -41,6 +41,27 @@ impl Tab {
     pub(in crate::state) fn set_state(&mut self, state: TabState) {
         self.state = state;
     }
+
+    pub fn search(&mut self) -> Result<(), String> {
+        let url = self.search_buffer.trim();
+        if url.is_empty() {
+            return Err("Empty URL".to_string());
+        }
+        // Fetch the URL content
+        let html_content = match networking::fetch_url(url) {
+            Ok(html_content) => html_content,
+            Err(e) => return Err(format!("Failed to fetch URL: {}", e)),
+        };
+        // Parse the HTML content
+        let parsed_content = match html::parse_html(&html_content) {
+            Ok(parsed_content) => parsed_content,
+            Err(e) => return Err(format!("Failed to parse HTML: {}", e)),
+        };
+        // Update the tab with the new content
+        self.url = url.to_string();
+        self.content = parsed_content;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
