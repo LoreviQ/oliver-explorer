@@ -5,6 +5,12 @@ mod window;
 use crate::state;
 use eframe::egui;
 
+pub enum AppAction {
+    CloseWindow,
+    None,
+    CloseApp,
+}
+
 impl eframe::App for state::OliverExplorer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let panel_frame = egui::Frame::new()

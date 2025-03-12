@@ -3,6 +3,7 @@ use crate::state::tab::{Tab, TabState};
 use std::sync::Arc;
 
 pub struct Window {
+    pub id: usize,
     pub tabs: Vec<Tab>,
     pub settings: Arc<AppSettings>,
     next_tab_id: usize,
@@ -10,9 +11,10 @@ pub struct Window {
 
 impl Window {
     // Create a new window
-    pub fn new(settings: Arc<AppSettings>) -> Self {
+    pub fn new(id: usize, settings: Arc<AppSettings>) -> Self {
         let default_tab = Tab::new(0, Arc::clone(&settings));
         Self {
+            id,
             tabs: vec![default_tab],
             settings,
             next_tab_id: 1,
@@ -111,7 +113,7 @@ mod tests {
     #[test]
     fn test_window_creation() {
         let settings = Arc::new(AppSettings::default());
-        let window = Window::new(Arc::clone(&settings));
+        let window = Window::new(0, Arc::clone(&settings));
 
         // Check window has correct settings
         assert!(Arc::ptr_eq(&window.settings, &settings));
@@ -123,7 +125,7 @@ mod tests {
     #[test]
     fn test_new_tab() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Initially one tab
         assert_eq!(window.tabs.len(), 1);
@@ -140,7 +142,7 @@ mod tests {
     #[test]
     fn test_set_active_tab() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Add a second tab
         window.new_tab();
@@ -160,7 +162,7 @@ mod tests {
     #[test]
     fn test_get_active_tab() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Add a second tab (which becomes active)
         window.new_tab();
@@ -180,7 +182,7 @@ mod tests {
     #[test]
     fn test_close_inactive_tab() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Add a second tab
         window.new_tab();
@@ -200,7 +202,7 @@ mod tests {
     #[test]
     fn test_close_active_tab_with_previous() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Add two more tabs
         window.new_tab(); // id 1
@@ -221,7 +223,7 @@ mod tests {
     #[test]
     fn test_close_active_tab_with_next() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Add a second tab
         window.new_tab(); // id 1
@@ -244,7 +246,7 @@ mod tests {
     #[test]
     fn test_close_nonexistent_tab() {
         let settings = Arc::new(AppSettings::default());
-        let mut window = Window::new(Arc::clone(&settings));
+        let mut window = Window::new(0, Arc::clone(&settings));
 
         // Try to close a tab that doesn't exist
         let result = window.close_tab(999);
