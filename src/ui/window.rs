@@ -42,11 +42,9 @@ impl state::Window {
             egui::Sense::click_and_drag(),
         );
         if title_bar_response.double_clicked() {
-            dbg!("Title bar double clicked");
             action = Some(WindowAction::ToggleMaximize);
         }
         if title_bar_response.drag_started_by(egui::PointerButton::Primary) {
-            dbg!("Title bar dragged");
             action = Some(WindowAction::DragWindow);
         }
 
@@ -173,10 +171,12 @@ impl state::Window {
     where
         F: FnOnce(&mut Self, &mut egui::Ui) -> Option<WindowAction>,
     {
+        // draw the component and get the action
         let Some(action) = draw_fn(self, ui) else {
             return;
         };
 
+        // execute the action
         match action {
             // Create a new tab
             WindowAction::NewTab => {
@@ -188,28 +188,19 @@ impl state::Window {
             }
             // Close the tab with the given id
             WindowAction::CloseTab(tab_id) => {
-                if let Err(e) = self.close_tab(tab_id) {
-                    eprintln!("Error closing tab: {}", e);
-                }
+                let _ = self.close_tab(tab_id);
             }
             // Execute a search on the tab with the given id
             WindowAction::Search(tab_id) => {
-                let tab = match self.get_tab_mut(tab_id) {
-                    Ok(tab) => tab,
-                    Err(e) => {
-                        eprintln!("Error getting tab: {}", e);
-                        return;
-                    }
-                };
-                if let Err(e) = tab.search() {
-                    eprintln!("Error searching: {}", e);
-                }
+                let _ = self.search_tab(tab_id);
             }
             WindowAction::ToggleMaximize => {
-                dbg!("Toggle maximize");
+                let is_maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
+                ui.ctx()
+                    .send_viewport_cmd(egui::ViewportCommand::Maximized(!is_maximized));
             }
             WindowAction::DragWindow => {
-                dbg!("Drag window");
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
             }
         }
     }
