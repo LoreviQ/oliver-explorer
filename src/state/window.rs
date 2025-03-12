@@ -67,8 +67,9 @@ impl Window {
         Ok(())
     }
 
-    // Close a tab and activate the next tab if it exists
-    pub fn close_tab(&mut self, id: usize) -> Result<(), String> {
+    // Close a tab and activate the next tab if it exists.
+    // Returns true if the parent must also close the window
+    pub fn close_tab(&mut self, id: usize) -> Result<bool, String> {
         // Find the tab to close and its index
         let Some((tab_to_close, index)) = self
             .tabs
@@ -83,24 +84,22 @@ impl Window {
         // If the tab is not active, remove it
         if !tab_to_close.is_active() {
             self.tabs.remove(index);
-            return Ok(());
+            return Ok(false);
         }
 
         // If the tab is active, we need to find the next tab to activate
         match self.tabs.len() {
             1 => {
-                // If this is the last remaining tab, request application to close
-                std::process::exit(0);
-                // TODO: Change to closing window not entire application
+                self.tabs.remove(index);
+                return Ok(true);
             }
             tab_count => {
-                if index == tab_count - 1 {
-                    self.set_active_tab(self.tabs[index - 1].id);
-                } else {
-                    self.set_active_tab(self.tabs[index + 1].id);
+                match index == tab_count - 1 {
+                    true => self.set_active_tab(self.tabs[index - 1].id),
+                    false => self.set_active_tab(self.tabs[index + 1].id),
                 }
                 self.tabs.remove(index);
-                return Ok(());
+                return Ok(false);
             }
         }
     }

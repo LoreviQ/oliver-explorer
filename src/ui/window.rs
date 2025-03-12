@@ -31,11 +31,15 @@ impl WindowAction {
                 window.set_active_tab(tab_id);
             }
             // Close the tab with the given id
-            WindowAction::CloseTab(tab_id) => {
-                if let Err(e) = window.close_tab(tab_id) {
+            WindowAction::CloseTab(tab_id) => match window.close_tab(tab_id) {
+                Ok(true) => {
+                    WindowAction::CloseWindow.execute(window, ui);
+                }
+                Ok(false) => {}
+                Err(e) => {
                     dbg!("Error closing tab: {}", e);
-                };
-            }
+                }
+            },
             // Execute a search on the tab with the given id
             WindowAction::Search(tab_id) => {
                 if let Err(e) = window.search_tab(tab_id) {

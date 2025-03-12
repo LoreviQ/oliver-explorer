@@ -26,6 +26,11 @@ impl OliverExplorer {
         self.windows.push(new_window);
         self.next_window_id += 1;
     }
+
+    pub fn close_window(&mut self, id: usize) {
+        let index = self.windows.iter().position(|w| w.id == id).unwrap();
+        self.windows.remove(index);
+    }
 }
 
 #[cfg(test)]
