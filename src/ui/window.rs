@@ -62,27 +62,14 @@ impl state::Window {
         // Vertical layout without spacing
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
-
-            // Draw title bar and handle action
-            if let Some(action) = self.draw_title_bar(ui) {
-                action.execute(self, ui);
-            }
-
-            // Draw search bar and handle action
-            if let Some(action) = self.draw_search_bar(ui) {
-                action.execute(self, ui);
-            }
-
-            // Draw content and handle action (if any)
-            if let Some(action) = self.draw_content(ui) {
-                action.execute(self, ui);
-            }
+            self.draw_title_bar(ui);
+            self.draw_search_bar(ui);
+            self.draw_content(ui);
         });
     }
 
     // Draws the title bar and returns the action to be executed
-    pub fn draw_title_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
-        let mut action = None;
+    pub fn draw_title_bar(&mut self, ui: &mut egui::Ui) {
         let title_bar_rect = {
             let mut rect = ui.max_rect();
             rect.max.y = rect.min.y + self.settings.theme.frame.toolbar_height;
@@ -94,10 +81,10 @@ impl state::Window {
             egui::Sense::click_and_drag(),
         );
         if title_bar_response.double_clicked() {
-            action = Some(WindowAction::ToggleMaximize);
+            WindowAction::ToggleMaximize.execute(self, ui);
         }
         if title_bar_response.drag_started_by(egui::PointerButton::Primary) {
-            action = Some(WindowAction::DragWindow);
+            WindowAction::DragWindow.execute(self, ui);
         }
 
         ui.scope_builder(
@@ -108,28 +95,30 @@ impl state::Window {
                 ui.spacing_mut().item_spacing.x = self.settings.theme.frame.padding;
                 ui.visuals_mut().button_frame = false;
                 ui.add_space(8.0);
-                if let Some(content_action) = self.tab_bar_contents(ui) {
-                    action = Some(content_action);
-                }
+                self.tab_bar_contents(ui);
             },
         );
-        action
     }
 
     // Draws the contents of the tab bar
-    fn tab_bar_contents(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
-        let mut action = None;
-        action = close_button(ui).or(action);
-        action = plus_button(ui).or(action);
+    fn tab_bar_contents(&mut self, ui: &mut egui::Ui) {
+        if let Some(action) = close_button(ui) {
+            action.execute(self, ui);
+        }
+        if let Some(action) = plus_button(ui) {
+            action.execute(self, ui);
+        }
         // Tab items
         let tab_width = self.calculate_tab_width(ui);
+        let mut action = None;
         for tab in &mut self.tabs {
             if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
                 action = Some(tab_action);
             }
         }
-        // Return the action
-        action
+        if let Some(action) = action {
+            action.execute(self, ui);
+        }
     }
 
     // Calculate tab width based on available space
