@@ -13,6 +13,7 @@ pub enum WindowAction {
     Search(usize),
     ToggleMaximize,
     DragWindow,
+    CloseWindow,
 }
 
 // Tab bar component
@@ -67,8 +68,8 @@ impl state::Window {
     // Draws the contents of the tab bar
     fn tab_bar_contents(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let mut action = None;
-        let plus_button = plus_button(ui);
-
+        action = close_button(ui).or(action);
+        action = plus_button(ui).or(action);
         // Tab items
         let tab_width = self.calculate_tab_width(ui);
         for tab in &mut self.tabs {
@@ -76,11 +77,6 @@ impl state::Window {
                 action = Some(tab_action);
             }
         }
-        // New tab button
-        if plus_button.clicked() {
-            action = Some(WindowAction::NewTab);
-        }
-
         // Return the action
         action
     }
@@ -188,11 +184,15 @@ impl state::Window {
             }
             // Close the tab with the given id
             WindowAction::CloseTab(tab_id) => {
-                let _ = self.close_tab(tab_id);
+                if let Err(e) = self.close_tab(tab_id) {
+                    dbg!("Error closing tab: {}", e);
+                };
             }
             // Execute a search on the tab with the given id
             WindowAction::Search(tab_id) => {
-                let _ = self.search_tab(tab_id);
+                if let Err(e) = self.search_tab(tab_id) {
+                    dbg!("Error searching: {}", e);
+                };
             }
             WindowAction::ToggleMaximize => {
                 let is_maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
@@ -202,14 +202,37 @@ impl state::Window {
             WindowAction::DragWindow => {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
             }
+            WindowAction::CloseWindow => {
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+            }
         }
     }
 }
 
 // Plus button component
-fn plus_button(ui: &mut egui::Ui) -> egui::Response {
-    ui.add_sized(
-        [ui.available_size().y, ui.available_size().y],
-        egui::Button::new("+"),
-    )
+fn plus_button(ui: &mut egui::Ui) -> Option<WindowAction> {
+    let plus_response = ui
+        .add_sized(
+            [ui.available_size().y, ui.available_size().y],
+            egui::Button::new("+"),
+        )
+        .on_hover_text("New tab");
+    if plus_response.clicked() {
+        return Some(WindowAction::NewTab);
+    }
+    None
+}
+
+// Close button component
+fn close_button(ui: &mut egui::Ui) -> Option<WindowAction> {
+    let close_response = ui
+        .add_sized(
+            [ui.available_size().y, ui.available_size().y],
+            egui::Button::new("❌"),
+        )
+        .on_hover_text("Close the window");
+    if close_response.clicked() {
+        return Some(WindowAction::CloseWindow);
+    }
+    None
 }
