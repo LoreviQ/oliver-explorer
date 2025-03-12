@@ -7,9 +7,12 @@ use crate::state;
 // Actions to be executed at window level
 #[derive(Debug)]
 pub enum WindowAction {
+    NewTab,
     SelectTab(usize),
     CloseTab(usize),
     Search(usize),
+    ToggleMaximize,
+    DragWindow,
 }
 
 // Tab bar component
@@ -19,47 +22,66 @@ impl state::Window {
         // Vertical layout without spacing
         ui.vertical(|ui| {
             ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
-            self.draw_and_execute(ui, |s, ui| s.draw_tab_bar(ui));
+            self.draw_and_execute(ui, |s, ui| s.draw_title_bar(ui));
             self.draw_and_execute(ui, |s, ui| s.draw_search_bar(ui));
             self.draw_and_execute(ui, |s, ui| s.draw_content(ui));
         });
     }
 
-    // Show the tab bar returns the index of the active tab
-    pub fn draw_tab_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
+    // Draws the title bar and returns the action to be executed
+    pub fn draw_title_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
         let mut action = None;
-        let frame = egui::Frame::new()
-            .fill(self.settings.theme.general.background)
-            .inner_margin(egui::Margin::symmetric(
-                self.settings.theme.frame.padding as i8,
-                self.settings.theme.frame.padding as i8,
-            ));
+        let title_bar_rect = {
+            let mut rect = ui.max_rect();
+            rect.max.y = rect.min.y + self.settings.theme.frame.toolbar_height;
+            rect
+        };
+        let title_bar_response = ui.interact(
+            title_bar_rect,
+            egui::Id::new("title_bar"),
+            egui::Sense::click_and_drag(),
+        );
+        if title_bar_response.double_clicked() {
+            dbg!("Title bar double clicked");
+            action = Some(WindowAction::ToggleMaximize);
+        }
+        if title_bar_response.drag_started_by(egui::PointerButton::Primary) {
+            dbg!("Title bar dragged");
+            action = Some(WindowAction::DragWindow);
+        }
 
-        frame.show(ui, |ui| {
-            // Fixed height for the tab bar
-            ui.set_min_height(self.settings.theme.frame.toolbar_height);
-            ui.set_max_height(self.settings.theme.frame.toolbar_height);
-            ui.set_min_width(ui.available_width());
-
-            // Horizontal layout of tabs and new tab button
-            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+        ui.scope_builder(
+            egui::UiBuilder::new()
+                .max_rect(title_bar_rect)
+                .layout(egui::Layout::right_to_left(egui::Align::Center)),
+            |ui| {
                 ui.spacing_mut().item_spacing.x = self.settings.theme.frame.padding;
-
-                // Tab items
-                let tab_width = self.calculate_tab_width(ui);
-                for tab in &mut self.tabs {
-                    if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
-                        action = Some(tab_action);
-                    }
+                ui.visuals_mut().button_frame = false;
+                ui.add_space(8.0);
+                if let Some(content_action) = self.tab_bar_contents(ui) {
+                    action = Some(content_action);
                 }
+            },
+        );
+        action
+    }
 
-                // New tab button
-                let plus_button = plus_button(ui);
-                if plus_button.clicked() {
-                    self.new_tab();
-                }
-            });
-        });
+    // Draws the contents of the tab bar
+    fn tab_bar_contents(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
+        let mut action = None;
+        let plus_button = plus_button(ui);
+
+        // Tab items
+        let tab_width = self.calculate_tab_width(ui);
+        for tab in &mut self.tabs {
+            if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
+                action = Some(tab_action);
+            }
+        }
+        // New tab button
+        if plus_button.clicked() {
+            action = Some(WindowAction::NewTab);
+        }
 
         // Return the action
         action
@@ -156,6 +178,10 @@ impl state::Window {
         };
 
         match action {
+            // Create a new tab
+            WindowAction::NewTab => {
+                self.new_tab();
+            }
             // Select the tab with the given id
             WindowAction::SelectTab(tab_id) => {
                 self.set_active_tab(tab_id);
@@ -178,6 +204,12 @@ impl state::Window {
                 if let Err(e) = tab.search() {
                     eprintln!("Error searching: {}", e);
                 }
+            }
+            WindowAction::ToggleMaximize => {
+                dbg!("Toggle maximize");
+            }
+            WindowAction::DragWindow => {
+                dbg!("Drag window");
             }
         }
     }
