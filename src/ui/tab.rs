@@ -8,8 +8,8 @@ use crate::ui::components;
 use crate::ui::window::WindowAction;
 
 impl state::Tab {
-    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> Option<WindowAction> {
-        let mut action = None;
+    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> WindowAction {
+        let mut action = WindowAction::None;
         let tab_name = self.url.clone();
 
         // Get the background fill and stroke color for the tab
@@ -54,11 +54,11 @@ impl state::Tab {
                     })
                     .inner;
                 if label_response.clicked() {
-                    action = Some(WindowAction::SelectTab(self.id));
+                    action = WindowAction::SelectTab(self.id);
                 }
             });
             if ui.interact_bg(egui::Sense::click()).clicked() {
-                action = Some(WindowAction::SelectTab(self.id));
+                action = WindowAction::SelectTab(self.id);
             }
         });
         action

@@ -6,7 +6,7 @@ use crate::state;
 use crate::ui::components;
 
 // Actions to be executed at window level
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum WindowAction {
     NewTab,
     SelectTab(usize),
@@ -15,6 +15,7 @@ pub enum WindowAction {
     ToggleMaximize,
     DragWindow,
     CloseWindow,
+    None,
 }
 
 // Add execute method to WindowAction
@@ -52,6 +53,7 @@ impl WindowAction {
             WindowAction::CloseWindow => {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
             }
+            WindowAction::None => {}
         }
     }
 }
@@ -103,27 +105,20 @@ impl state::Window {
 
     // Draws the contents of the title bar
     fn title_bar_contents(&mut self, ui: &mut egui::Ui) {
-        // Close button
-        if let Some(action) = components::close_button(
+        components::close_button(
             ui,
             egui::Vec2::new(ui.available_size().y, ui.available_size().y),
             WindowAction::CloseWindow,
-        ) {
-            action.execute(self, ui);
-        }
-        // Plus button
-        if let Some(action) = plus_button(ui) {
-            action.execute(self, ui);
-        }
+        )
+        .execute(self, ui);
+        plus_button(ui).execute(self, ui);
         // Tabs
         let tab_width = self.calculate_tab_width(ui);
-        let mut action = None;
+        let mut actions = Vec::new();
         for tab in &mut self.tabs {
-            if let Some(tab_action) = tab.draw_tab(ui, tab_width) {
-                action = Some(tab_action);
-            }
+            actions.push(tab.draw_tab(ui, tab_width));
         }
-        if let Some(action) = action {
+        for action in actions {
             action.execute(self, ui);
         }
     }
@@ -139,8 +134,7 @@ impl state::Window {
     }
 
     // Draw the search bar
-    fn draw_search_bar(&mut self, ui: &mut egui::Ui) -> Option<WindowAction> {
-        let mut action = None;
+    fn draw_search_bar(&mut self, ui: &mut egui::Ui) {
         egui::Frame::new()
             .fill(self.settings.theme.accent.background)
             .inner_margin(egui::Margin::ZERO)
@@ -177,17 +171,14 @@ impl state::Window {
                     // Check if Enter key was pressed while the search box is focused
                     if search_response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))
                     {
-                        action = Some(WindowAction::Search(active_tab.id));
+                        WindowAction::Search(active_tab.id).execute(self, ui);
                     }
                 });
             });
-        action
     }
 
     // Draws the content of the active tab
-    fn draw_content(&self, ui: &mut egui::Ui) -> Option<WindowAction> {
-        let action = None;
-
+    fn draw_content(&self, ui: &mut egui::Ui) {
         // Use Frame for consistent styling
         egui::Frame::new()
             .fill(self.settings.theme.general.background)
@@ -205,13 +196,11 @@ impl state::Window {
                 ui.label(&active_tab.content);
                 // TODO: Add a proper HTML renderer here
             });
-
-        action
     }
 }
 
 // Plus button component
-fn plus_button(ui: &mut egui::Ui) -> Option<WindowAction> {
+fn plus_button(ui: &mut egui::Ui) -> WindowAction {
     let plus_response = ui
         .add_sized(
             [ui.available_size().y, ui.available_size().y],
@@ -219,7 +208,7 @@ fn plus_button(ui: &mut egui::Ui) -> Option<WindowAction> {
         )
         .on_hover_text("New tab");
     if plus_response.clicked() {
-        return Some(WindowAction::NewTab);
+        return WindowAction::NewTab;
     }
-    None
+    WindowAction::None
 }

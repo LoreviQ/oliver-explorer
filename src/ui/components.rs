@@ -4,18 +4,14 @@ use crate::ui::window::WindowAction;
 use eframe::egui;
 
 // Close button component
-pub fn close_button(
-    ui: &mut egui::Ui,
-    size: egui::Vec2,
-    action: WindowAction,
-) -> Option<WindowAction> {
+pub fn close_button(ui: &mut egui::Ui, size: egui::Vec2, action: WindowAction) -> WindowAction {
     let close_response = ui
         .add_sized(size, egui::Button::new("❌"))
         .on_hover_text("Close the window");
     if close_response.clicked() {
-        return Some(action);
+        return action;
     }
-    None
+    WindowAction::None
 }
 
 /*
