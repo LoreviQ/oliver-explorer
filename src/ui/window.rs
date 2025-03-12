@@ -3,6 +3,7 @@
 use eframe::egui;
 
 use crate::state;
+use crate::ui::components;
 
 // Actions to be executed at window level
 #[derive(Debug)]
@@ -95,20 +96,26 @@ impl state::Window {
                 ui.spacing_mut().item_spacing.x = self.settings.theme.frame.padding;
                 ui.visuals_mut().button_frame = false;
                 ui.add_space(8.0);
-                self.tab_bar_contents(ui);
+                self.title_bar_contents(ui);
             },
         );
     }
 
-    // Draws the contents of the tab bar
-    fn tab_bar_contents(&mut self, ui: &mut egui::Ui) {
-        if let Some(action) = close_button(ui) {
+    // Draws the contents of the title bar
+    fn title_bar_contents(&mut self, ui: &mut egui::Ui) {
+        // Close button
+        if let Some(action) = components::close_button(
+            ui,
+            egui::Vec2::new(ui.available_size().y, ui.available_size().y),
+            WindowAction::CloseWindow,
+        ) {
             action.execute(self, ui);
         }
+        // Plus button
         if let Some(action) = plus_button(ui) {
             action.execute(self, ui);
         }
-        // Tab items
+        // Tabs
         let tab_width = self.calculate_tab_width(ui);
         let mut action = None;
         for tab in &mut self.tabs {
@@ -213,20 +220,6 @@ fn plus_button(ui: &mut egui::Ui) -> Option<WindowAction> {
         .on_hover_text("New tab");
     if plus_response.clicked() {
         return Some(WindowAction::NewTab);
-    }
-    None
-}
-
-// Close button component
-fn close_button(ui: &mut egui::Ui) -> Option<WindowAction> {
-    let close_response = ui
-        .add_sized(
-            [ui.available_size().y, ui.available_size().y],
-            egui::Button::new("❌"),
-        )
-        .on_hover_text("Close the window");
-    if close_response.clicked() {
-        return Some(WindowAction::CloseWindow);
     }
     None
 }
