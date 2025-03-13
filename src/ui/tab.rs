@@ -13,6 +13,7 @@ impl state::Tab {
         let tab_name = self.url.clone();
 
         // Get the background fill and stroke color for the tab
+        /*
         let (bg_fill, stroke_color) = match self.is_active() {
             true => (
                 self.settings.theme.accent.background,
@@ -23,10 +24,11 @@ impl state::Tab {
                 self.settings.theme.general.text,
             ),
         };
+        */
 
         // Create a frame for the tab with fixed width and padding
         let frame = egui::Frame::new()
-            .fill(bg_fill)
+            //.fill(bg_fill)
             .inner_margin(Margin::symmetric(
                 self.settings.theme.frame.padding as i8,
                 self.settings.theme.frame.padding as i8,
@@ -34,7 +36,7 @@ impl state::Tab {
 
         let label = egui::Label::new(
             egui::RichText::new(tab_name)
-                .color(stroke_color)
+                //.color(stroke_color)
                 .size(self.settings.theme.frame.text_size),
         )
         .truncate();
@@ -62,5 +64,53 @@ impl state::Tab {
             }
         });
         action
+    }
+
+    pub fn draw_tab_new(&self, ui: &mut egui::Ui, width: f32) -> WindowAction {
+        let tab_rect = {
+            let mut rect = ui.max_rect();
+            rect.max.x = rect.min.x + width;
+            rect
+        };
+        let tab_response = ui.interact(tab_rect, egui::Id::new("tab"), egui::Sense::click());
+        if tab_response.clicked() {
+            return WindowAction::SelectTab(self.id);
+        }
+        ui.scope_builder(
+            egui::UiBuilder::new()
+                .max_rect(tab_rect)
+                .layout(egui::Layout::left_to_right(egui::Align::Center))
+                .style(egui::Style::default()),
+            |ui| {
+                self.tab_contents(ui);
+            },
+        );
+        WindowAction::None
+    }
+
+    pub fn tab_contents(&self, ui: &mut egui::Ui) {
+        let frame = egui::Frame::new()
+            //.fill(self.settings.theme.general.background)
+            .inner_margin(Margin::symmetric(
+                self.settings.theme.frame.padding as i8,
+                self.settings.theme.frame.padding as i8,
+            ));
+
+        let label = egui::Label::new(
+            egui::RichText::new("test")
+                //.color(self.settings.theme.general.text)
+                .size(self.settings.theme.frame.text_size),
+        )
+        .truncate();
+
+        frame.show(ui, |ui| {
+            ui.set_width(ui.available_width());
+            ui.add(label);
+            components::close_button(
+                ui,
+                egui::Vec2::new(16.0, 16.0),
+                WindowAction::CloseTab(self.id),
+            );
+        });
     }
 }

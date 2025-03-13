@@ -1,6 +1,5 @@
 use crate::state::theme::Theme;
-
-#[derive(Debug)]
+use std::fmt;
 pub struct AppSettings {
     pub title: String,
     pub default_url: String,
@@ -14,6 +13,16 @@ impl Default for AppSettings {
             default_url: "http://localhost:3333".to_string(),
             theme: Theme::default(),
         }
+    }
+}
+
+impl fmt::Debug for AppSettings {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AppSettings")
+            .field("title", &self.title)
+            .field("default_url", &self.default_url)
+            // Intentionally skip the theme field
+            .finish()
     }
 }
 
