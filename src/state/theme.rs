@@ -9,30 +9,52 @@ pub struct Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
-            style: egui::Style::default(),
+            style: egui::Style {
+                visuals: egui::Visuals {
+                    panel_fill: egui::Color32::from_rgb(30, 30, 30),
+                    widgets: egui::style::Widgets {
+                        inactive: default_widget_visuals(),
+                        active: egui::style::WidgetVisuals {
+                            bg_fill: egui::Color32::from_rgb(45, 45, 45),
+                            weak_bg_fill: egui::Color32::from_rgb(45, 45, 45),
+                            ..default_widget_visuals()
+                        },
+                        hovered: egui::style::WidgetVisuals {
+                            bg_fill: egui::Color32::from_rgb(55, 55, 55),
+                            weak_bg_fill: egui::Color32::from_rgb(55, 55, 55),
+                            ..default_widget_visuals()
+                        },
+                        noninteractive: egui::style::WidgetVisuals {
+                            bg_fill: egui::Color32::from_rgb(45, 45, 45),
+                            weak_bg_fill: egui::Color32::from_rgb(45, 45, 45),
+                            ..default_widget_visuals()
+                        },
+                        open: default_widget_visuals(),
+                    },
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
             frame: Layout::default(),
         }
     }
 }
-/* TODO: Fix with new style system
-impl Default for Theme {
-    fn default() -> Self {
-        Self {
-            general: ThemeDetails {
-                background: egui::Color32::from_rgb(30, 30, 30),
-                text: egui::Color32::from_rgb(230, 230, 230),
-                hover: egui::Color32::from_rgb(55, 55, 55),
-            },
-            accent: ThemeDetails {
-                background: egui::Color32::from_rgb(45, 45, 45),
-                text: egui::Color32::from_rgb(230, 230, 230),
-                hover: egui::Color32::from_rgb(70, 70, 70),
-            },
-            frame: FrameDetails
-        }
+
+fn default_widget_visuals() -> egui::style::WidgetVisuals {
+    egui::style::WidgetVisuals {
+        bg_fill: egui::Color32::from_rgb(30, 30, 30),
+        weak_bg_fill: egui::Color32::from_rgb(30, 30, 30),
+        bg_stroke: egui::Stroke::new(0.0, egui::Color32::from_rgb(230, 230, 230)),
+        fg_stroke: egui::Stroke::new(0.0, egui::Color32::from_rgb(230, 230, 230)),
+        corner_radius: egui::CornerRadius {
+            nw: 0,
+            ne: 0,
+            sw: 0,
+            se: 0,
+        },
+        expansion: 0.0,
     }
 }
-*/
 
 pub struct Layout {
     pub text_size: f32,

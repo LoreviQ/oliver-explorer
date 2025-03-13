@@ -148,7 +148,15 @@ impl state::Window {
     // Draw the search bar
     fn draw_search_bar(&mut self, ui: &mut egui::Ui) {
         egui::Frame::new()
-            //.fill(self.settings.theme.accent.background)
+            .fill(
+                self.settings
+                    .theme
+                    .style
+                    .visuals
+                    .widgets
+                    .noninteractive
+                    .bg_fill,
+            )
             .inner_margin(egui::Margin::ZERO)
             .show(ui, |ui| {
                 // Fixed height for search bar
@@ -164,8 +172,6 @@ impl state::Window {
                     let search_height = self.settings.theme.frame.toolbar_height
                         - self.settings.theme.frame.padding * 2.0;
                     let padding = (available_width - search_width) / 2.0;
-                    //let text_color = self.settings.theme.general.text;
-                    //let bg_color = self.settings.theme.general.background;
                     let active_tab = self.get_active_tab_mut().expect("No active tab found");
 
                     // layout elements
@@ -173,8 +179,6 @@ impl state::Window {
                     let search = egui::TextEdit::singleline(&mut active_tab.search_buffer)
                         .hint_text("Search...")
                         .desired_width(search_width);
-                    //.text_color(text_color)
-                    //.background_color(bg_color);
 
                     let search_response = ui.add_sized([search_width, search_height], search);
                     ui.add_space(padding);
