@@ -1,9 +1,9 @@
-use crate::state::theme::Theme;
+use crate::state::theme::Layout;
 use std::fmt;
 pub struct AppSettings {
     pub title: String,
     pub default_url: String,
-    pub theme: Theme,
+    pub layout: Layout,
 }
 
 impl Default for AppSettings {
@@ -11,7 +11,7 @@ impl Default for AppSettings {
         Self {
             title: "Oliver Explorer".to_string(),
             default_url: "http://localhost:3333".to_string(),
-            theme: Theme::default(),
+            layout: Layout::default(),
         }
     }
 }

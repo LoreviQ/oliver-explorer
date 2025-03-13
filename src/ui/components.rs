@@ -22,6 +22,7 @@ pub fn plus_button(ui: &mut egui::Ui, size: egui::Vec2, action: WindowAction) ->
     if plus_response.clicked() {
         return action;
     }
+
     WindowAction::None
 }
 

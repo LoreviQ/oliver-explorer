@@ -9,23 +9,18 @@ use crate::ui::window::WindowAction;
 impl state::Tab {
     pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> WindowAction {
         let mut action = WindowAction::None;
-        let tab_name = self.url.clone();
 
         // Get the background fill for the tab
         let bg_fill = match self.is_active() {
-            true => self.settings.theme.style.visuals.widgets.active.bg_fill,
-            false => self.settings.theme.style.visuals.widgets.inactive.bg_fill,
+            true => ui.visuals().widgets.active.bg_fill,
+            false => ui.visuals().widgets.inactive.bg_fill,
         };
 
         // Create a frame for the tab with fixed width and padding
         let outer_frame = egui::Frame::new().fill(bg_fill);
-        let inner_frame =
-            egui::Frame::new().inner_margin(self.settings.theme.style.spacing.window_margin);
+        let inner_frame = egui::Frame::new().inner_margin(ui.spacing().window_margin);
 
-        let label = egui::Label::new(
-            egui::RichText::new(tab_name).size(self.settings.theme.frame.text_size),
-        )
-        .truncate();
+        let label = egui::Label::new(egui::RichText::new(&self.url)).truncate();
 
         outer_frame.show(ui, |ui| {
             ui.set_width(width);

@@ -14,10 +14,6 @@ pub fn start_browser() -> eframe::Result {
     eframe::run_native(
         state::AppSettings::default().title.as_str(),
         options,
-        Box::new(|cc| {
-            // This gives us image support:
-            egui_extras::install_image_loaders(&cc.egui_ctx);
-            Ok(Box::<state::OliverExplorer>::default())
-        }),
+        Box::new(|cc| Ok(Box::new(state::OliverExplorer::new(cc)))),
     )
 }

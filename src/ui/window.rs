@@ -79,7 +79,7 @@ impl state::Window {
     pub fn draw_title_bar(&mut self, ui: &mut egui::Ui) {
         let title_bar_rect = {
             let mut rect = ui.max_rect();
-            rect.max.y = rect.min.y + self.settings.theme.frame.toolbar_height;
+            rect.max.y = rect.min.y + self.settings.layout.toolbar_height;
             rect
         };
         let title_bar_response = ui.interact(
@@ -97,8 +97,7 @@ impl state::Window {
         ui.scope_builder(
             egui::UiBuilder::new()
                 .max_rect(title_bar_rect)
-                .layout(egui::Layout::right_to_left(egui::Align::Center))
-                .style(self.settings.theme.style.clone()), //TODO: Remove clone?
+                .layout(egui::Layout::right_to_left(egui::Align::Center)),
             |ui| {
                 ui.visuals_mut().button_frame = false;
                 self.title_bar_contents(ui);
@@ -137,13 +136,13 @@ impl state::Window {
     fn calculate_tab_width(&self, ui: &mut egui::Ui) -> f32 {
         let available_width = ui.available_width();
         let tab_count = self.tabs.len() as f32;
-        let spacing_width = tab_count * self.settings.theme.style.spacing.item_spacing.x;
+        let spacing_width = tab_count * ui.spacing().item_spacing.x;
         let plus_button_width = ui.available_size().y;
         let total_width = available_width - spacing_width - plus_button_width;
-        if total_width > tab_count * self.settings.theme.frame.tab_width.max {
-            return self.settings.theme.frame.tab_width.max;
+        if total_width > tab_count * self.settings.layout.tab_width.max {
+            return self.settings.layout.tab_width.max;
         }
-        if total_width < tab_count * self.settings.theme.frame.tab_width.min {
+        if total_width < tab_count * self.settings.layout.tab_width.min {
             panic!("Not enough space for tabs"); // TODO: Add in horizontal scroll
         }
         total_width / tab_count
@@ -152,20 +151,12 @@ impl state::Window {
     // Draw the search bar
     fn draw_search_bar(&mut self, ui: &mut egui::Ui) {
         egui::Frame::new()
-            .fill(
-                self.settings
-                    .theme
-                    .style
-                    .visuals
-                    .widgets
-                    .noninteractive
-                    .bg_fill,
-            )
+            .fill(ui.visuals().widgets.noninteractive.bg_fill)
             .inner_margin(egui::Margin::ZERO)
             .show(ui, |ui| {
                 // Fixed height for search bar
-                ui.set_min_height(self.settings.theme.frame.toolbar_height);
-                ui.set_max_height(self.settings.theme.frame.toolbar_height);
+                ui.set_min_height(self.settings.layout.toolbar_height);
+                ui.set_max_height(self.settings.layout.toolbar_height);
                 ui.set_min_width(ui.available_width());
 
                 // Full width container
@@ -173,9 +164,9 @@ impl state::Window {
                     // Calculate width for the centered search input
                     let available_width = ui.available_width();
                     let search_width = available_width * 0.6; // Use 60% of available width
-                    let search_height = self.settings.theme.frame.toolbar_height
-                        - self.settings.theme.style.spacing.window_margin.top as f32
-                        - self.settings.theme.style.spacing.window_margin.bottom as f32;
+                    let search_height = self.settings.layout.toolbar_height
+                        - ui.spacing().window_margin.top as f32
+                        - ui.spacing().window_margin.bottom as f32;
                     let padding = (available_width - search_width) / 2.0;
                     let active_tab = self.get_active_tab_mut().expect("No active tab found");
 
@@ -200,9 +191,8 @@ impl state::Window {
 
     // Draws the content of the active tab
     fn draw_content(&self, ui: &mut egui::Ui) {
-        // Use Frame for consistent styling
         egui::Frame::new()
-            //.fill(self.settings.theme.general.background)
+            .fill(ui.visuals().panel_fill)
             .inner_margin(egui::Margin::ZERO)
             .show(ui, |ui| {
                 // Take all available remaining height
