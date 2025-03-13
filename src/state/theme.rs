@@ -33,6 +33,16 @@ impl Default for Theme {
                     },
                     ..Default::default()
                 },
+                spacing: egui::Spacing {
+                    item_spacing: egui::Vec2::new(0.0, 0.0),
+                    window_margin: egui::Margin {
+                        left: 8,
+                        right: 8,
+                        top: 8,
+                        bottom: 8,
+                    },
+                    ..Default::default()
+                },
                 ..Default::default()
             },
             frame: Layout::default(),
@@ -58,7 +68,6 @@ fn default_widget_visuals() -> egui::style::WidgetVisuals {
 
 pub struct Layout {
     pub text_size: f32,
-    pub padding: f32,
     pub toolbar_height: f32,
     pub tab_width: MinMax,
 }
@@ -72,7 +81,6 @@ impl Default for Layout {
     fn default() -> Self {
         Self {
             text_size: 12.0,
-            padding: 8.0,
             toolbar_height: 40.0,
             tab_width: MinMax {
                 min: 40.0,

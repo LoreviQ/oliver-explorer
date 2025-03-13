@@ -1,7 +1,6 @@
 // UI specific to tab level changes
 
 use eframe::egui;
-use eframe::epaint::Margin;
 
 use crate::state;
 use crate::ui::components;
@@ -21,10 +20,7 @@ impl state::Tab {
         // Create a frame for the tab with fixed width and padding
         let frame = egui::Frame::new()
             .fill(bg_fill)
-            .inner_margin(Margin::symmetric(
-                self.settings.theme.frame.padding as i8,
-                self.settings.theme.frame.padding as i8,
-            ));
+            .inner_margin(self.settings.theme.style.spacing.window_margin);
 
         let label = egui::Label::new(
             egui::RichText::new(tab_name).size(self.settings.theme.frame.text_size),
@@ -32,7 +28,7 @@ impl state::Tab {
         .truncate();
 
         frame.show(ui, |ui| {
-            ui.set_width(width - (self.settings.theme.frame.padding * 2.0));
+            ui.set_width(width - (self.settings.theme.style.spacing.item_spacing.x * 2.0)); // Might be margin
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 action = components::close_button(
                     ui,
@@ -79,12 +75,12 @@ impl state::Tab {
     }
 
     pub fn tab_contents(&self, ui: &mut egui::Ui) {
-        let frame = egui::Frame::new()
-            //.fill(self.settings.theme.general.background)
-            .inner_margin(Margin::symmetric(
-                self.settings.theme.frame.padding as i8,
-                self.settings.theme.frame.padding as i8,
-            ));
+        let frame = egui::Frame::new();
+        //.fill(self.settings.theme.general.background)
+        //.inner_margin(Margin::symmetric(
+        //    self.settings.theme.frame.padding as i8,
+        //    self.settings.theme.frame.padding as i8,
+        //));
 
         let label = egui::Label::new(
             egui::RichText::new("test")

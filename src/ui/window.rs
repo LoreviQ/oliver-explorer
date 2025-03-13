@@ -98,11 +98,9 @@ impl state::Window {
             egui::UiBuilder::new()
                 .max_rect(title_bar_rect)
                 .layout(egui::Layout::right_to_left(egui::Align::Center))
-                .style(egui::Style::default()),
+                .style(self.settings.theme.style.clone()), //TODO: Remove clone?
             |ui| {
-                ui.spacing_mut().item_spacing.x = self.settings.theme.frame.padding;
                 ui.visuals_mut().button_frame = false;
-                ui.add_space(8.0);
                 self.title_bar_contents(ui);
             },
         );
@@ -140,7 +138,7 @@ impl state::Window {
         let tab_count = self.tabs.len() as f32;
         let available_width = ui.available_width();
         let plus_button_width = ui.available_size().y;
-        let spacing_width = tab_count * self.settings.theme.frame.padding;
+        let spacing_width = tab_count * self.settings.theme.style.spacing.item_spacing.x;
         let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
         width_per_tab.min(self.settings.theme.frame.tab_width.max)
     }
@@ -170,7 +168,8 @@ impl state::Window {
                     let available_width = ui.available_width();
                     let search_width = available_width * 0.6; // Use 60% of available width
                     let search_height = self.settings.theme.frame.toolbar_height
-                        - self.settings.theme.frame.padding * 2.0;
+                        - self.settings.theme.style.spacing.window_margin.top as f32
+                        - self.settings.theme.style.spacing.window_margin.bottom as f32;
                     let padding = (available_width - search_width) / 2.0;
                     let active_tab = self.get_active_tab_mut().expect("No active tab found");
 
