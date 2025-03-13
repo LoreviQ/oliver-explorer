@@ -135,12 +135,18 @@ impl state::Window {
 
     // Calculate tab width based on available space
     fn calculate_tab_width(&self, ui: &mut egui::Ui) -> f32 {
-        let tab_count = self.tabs.len() as f32;
         let available_width = ui.available_width();
-        let plus_button_width = ui.available_size().y;
+        let tab_count = self.tabs.len() as f32;
         let spacing_width = tab_count * self.settings.theme.style.spacing.item_spacing.x;
-        let width_per_tab = (available_width - plus_button_width - spacing_width) / tab_count;
-        width_per_tab.min(self.settings.theme.frame.tab_width.max)
+        let plus_button_width = ui.available_size().y;
+        let total_width = available_width - spacing_width - plus_button_width;
+        if total_width > tab_count * self.settings.theme.frame.tab_width.max {
+            return self.settings.theme.frame.tab_width.max;
+        }
+        if total_width < tab_count * self.settings.theme.frame.tab_width.min {
+            panic!("Not enough space for tabs"); // TODO: Add in horizontal scroll
+        }
+        total_width / tab_count
     }
 
     // Draw the search bar

@@ -28,7 +28,11 @@ impl state::Tab {
         .truncate();
 
         frame.show(ui, |ui| {
-            ui.set_width(width - (self.settings.theme.style.spacing.item_spacing.x * 2.0)); // Might be margin
+            ui.set_width(
+                width
+                    - self.settings.theme.style.spacing.window_margin.left as f32
+                    - self.settings.theme.style.spacing.window_margin.right as f32,
+            );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 action = components::close_button(
                     ui,
