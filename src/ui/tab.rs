@@ -43,6 +43,13 @@ impl state::Tab {
                             content: "❌".to_string(),
                             hover_text: "Close the tab".to_string(),
                             action: WindowAction::CloseTab(self.id),
+                            size: egui::Vec2::new(24.0, 24.0),
+                            corner_radius: egui::CornerRadius {
+                                nw: 12,
+                                ne: 12,
+                                sw: 12,
+                                se: 12,
+                            },
                             ..Default::default()
                         },
                     );

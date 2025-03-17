@@ -10,6 +10,7 @@ pub struct ButtonParams {
     pub corner_radius: egui::CornerRadius,
     pub action: WindowAction,
     pub stroke: egui::Stroke,
+    pub bg_fill: egui::Color32,
 }
 
 impl Default for ButtonParams {
@@ -26,12 +27,15 @@ impl Default for ButtonParams {
             },
             action: WindowAction::None,
             stroke: egui::Stroke::new(0.0, egui::Color32::TRANSPARENT),
+            bg_fill: egui::Color32::TRANSPARENT,
         }
     }
 }
 
 // Close button component
 pub fn button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
+    let original_bg_fill = ui.visuals().widgets.inactive.weak_bg_fill;
+    ui.visuals_mut().widgets.inactive.weak_bg_fill = params.bg_fill;
     let response = ui
         .add_sized(
             params.size,
@@ -40,6 +44,7 @@ pub fn button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
                 .stroke(params.stroke),
         )
         .on_hover_text(params.hover_text);
+    ui.visuals_mut().widgets.inactive.weak_bg_fill = original_bg_fill;
     if response.clicked() {
         return params.action;
     }
