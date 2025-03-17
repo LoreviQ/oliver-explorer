@@ -165,43 +165,47 @@ impl state::Window {
 
     // Draw the search bar
     fn draw_search_bar(&mut self, ui: &mut egui::Ui) {
-        egui::Frame::new()
+        let search_bar = egui::Frame::new()
             .fill(ui.visuals().widgets.noninteractive.bg_fill)
-            .inner_margin(egui::Margin::ZERO)
-            .show(ui, |ui| {
-                // Fixed height for search bar
-                ui.set_min_height(self.settings.layout.toolbar_height);
-                ui.set_max_height(self.settings.layout.toolbar_height);
-                ui.set_min_width(ui.available_width());
+            .inner_margin(egui::Margin::ZERO);
 
-                // Full width container
-                ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                    // Calculate width for the centered search input
-                    let available_width = ui.available_width();
-                    let search_width = available_width * 0.6; // Use 60% of available width
-                    let search_height = self.settings.layout.toolbar_height
-                        - ui.spacing().window_margin.top as f32
-                        - ui.spacing().window_margin.bottom as f32;
-                    let padding = (available_width - search_width) / 2.0;
-                    let active_tab = self.get_active_tab_mut().expect("No active tab found");
+        search_bar.show(ui, |ui| {
+            // Fixed height for search bar
+            ui.set_min_height(self.settings.layout.toolbar_height);
+            ui.set_max_height(self.settings.layout.toolbar_height);
+            ui.set_min_width(ui.available_width());
 
-                    // layout elements
-                    ui.add_space(padding);
-                    let search = egui::TextEdit::singleline(&mut active_tab.search_buffer)
-                        .hint_text("Search...")
-                        .desired_width(search_width);
-
-                    let search_response = ui.add_sized([search_width, search_height], search);
-                    ui.add_space(padding);
-
-                    // Handle responses
-                    // Check if Enter key was pressed while the search box is focused
-                    if search_response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter))
-                    {
-                        WindowAction::Search(active_tab.id).execute(self, ui);
-                    }
-                });
+            // Full width container
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                self.search_bar_contents(ui);
             });
+        });
+    }
+
+    fn search_bar_contents(&mut self, ui: &mut egui::Ui) {
+        // Calculate width for the centered search input
+        let available_width = ui.available_width();
+        let search_width = available_width * 0.6; // Use 60% of available width
+        let search_height = self.settings.layout.toolbar_height
+            - ui.spacing().window_margin.top as f32
+            - ui.spacing().window_margin.bottom as f32;
+        let padding = (available_width - search_width) / 2.0;
+        let active_tab = self.get_active_tab_mut().expect("No active tab found");
+
+        // layout elements
+        ui.add_space(padding);
+        let search = egui::TextEdit::singleline(&mut active_tab.search_buffer)
+            .hint_text("Search...")
+            .desired_width(search_width);
+
+        let search_response = ui.add_sized([search_width, search_height], search);
+        ui.add_space(padding);
+
+        // Handle responses
+        // Check if Enter key was pressed while the search box is focused
+        if search_response.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+            WindowAction::Search(active_tab.id).execute(self, ui);
+        }
     }
 
     // Draws the content of the active tab
