@@ -82,37 +82,24 @@ impl state::Window {
         egui::CentralPanel::default()
             .frame(window_frame)
             .show(ctx, |ui| {
-                // calculate rect areas for components
-                let title_bar_rect = {
-                    let mut rect = ui.max_rect();
-                    rect.max.y = rect.min.y + self.settings.layout.toolbar_height;
-                    rect
-                };
-                let search_bar_rect = {
-                    let mut rect = ui.max_rect();
-                    rect.min.y = title_bar_rect.max.y;
-                    rect.max.y = rect.min.y + self.settings.layout.toolbar_height;
-                    rect
-                };
-                let content_rect = {
-                    let mut rect = ui.max_rect();
-                    rect.min.y = search_bar_rect.max.y;
-                    rect
-                };
-
                 ui.vertical(|ui| {
                     ui.spacing_mut().item_spacing = egui::vec2(0.0, 0.0);
-                    self.draw_title_bar(ui, title_bar_rect);
-                    self.draw_search_bar(ui, search_bar_rect);
-                    self.draw_content(ui, content_rect);
+                    self.draw_title_bar(ui);
+                    self.draw_search_bar(ui);
+                    self.draw_content(ui);
                 });
             });
     }
 
     // Draws the title bar and returns the action to be executed
-    pub fn draw_title_bar(&mut self, ui: &mut egui::Ui, rect: egui::Rect) {
+    pub fn draw_title_bar(&mut self, ui: &mut egui::Ui) {
+        let title_bar_rect = {
+            let mut rect = ui.max_rect();
+            rect.max.y = rect.min.y + self.settings.layout.toolbar_height;
+            rect
+        };
         let title_bar_response = ui.interact(
-            rect,
+            title_bar_rect,
             egui::Id::new("title_bar"),
             egui::Sense::click_and_drag(),
         );
@@ -125,7 +112,7 @@ impl state::Window {
 
         ui.scope_builder(
             egui::UiBuilder::new()
-                .max_rect(rect)
+                .max_rect(title_bar_rect)
                 .layout(egui::Layout::right_to_left(egui::Align::Center)),
             |ui| {
                 self.title_bar_contents(ui);
@@ -177,7 +164,7 @@ impl state::Window {
     }
 
     // Draw the search bar
-    fn draw_search_bar(&mut self, ui: &mut egui::Ui, _: egui::Rect) {
+    fn draw_search_bar(&mut self, ui: &mut egui::Ui) {
         egui::Frame::new()
             .fill(ui.visuals().widgets.noninteractive.bg_fill)
             .inner_margin(egui::Margin::ZERO)
@@ -218,7 +205,7 @@ impl state::Window {
     }
 
     // Draws the content of the active tab
-    fn draw_content(&self, ui: &mut egui::Ui, _: egui::Rect) {
+    fn draw_content(&self, ui: &mut egui::Ui) {
         egui::Frame::new()
             .fill(ui.visuals().panel_fill)
             .inner_margin(egui::Margin::ZERO)
