@@ -133,6 +133,7 @@ impl state::Window {
                     sw: 0,
                     se: 0,
                 },
+                ..Default::default()
             },
         )
         .execute(self, ui);
@@ -154,6 +155,7 @@ impl state::Window {
                     ..Default::default()
                 },
             )
+            .execute(self, ui);
         });
     }
 

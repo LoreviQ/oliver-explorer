@@ -7,6 +7,7 @@ pub struct ButtonParams {
     pub size: egui::Vec2,
     pub corner_radius: egui::CornerRadius,
     pub action: WindowAction,
+    pub stroke: egui::Stroke,
 }
 
 impl Default for ButtonParams {
@@ -20,6 +21,7 @@ impl Default for ButtonParams {
                 se: 0,
             },
             action: WindowAction::None,
+            stroke: egui::Stroke::new(0.0, egui::Color32::TRANSPARENT),
         }
     }
 }
@@ -29,7 +31,9 @@ pub fn close_button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
     let close_response = ui
         .add_sized(
             params.size,
-            egui::Button::new("❌").corner_radius(params.corner_radius),
+            egui::Button::new("❌")
+                .corner_radius(params.corner_radius)
+                .stroke(params.stroke),
         )
         .on_hover_text("Close the window");
     if close_response.clicked() {
@@ -43,7 +47,9 @@ pub fn plus_button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
     let plus_response = ui
         .add_sized(
             params.size,
-            egui::Button::new("+").corner_radius(params.corner_radius),
+            egui::Button::new("+")
+                .corner_radius(params.corner_radius)
+                .stroke(params.stroke),
         )
         .on_hover_text("New tab");
     if plus_response.clicked() {
