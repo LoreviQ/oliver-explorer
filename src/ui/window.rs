@@ -69,14 +69,9 @@ impl state::Window {
         // Create frame for window
         let window_frame = egui::Frame::new()
             .fill(ctx.style().visuals.window_fill())
-            .corner_radius(egui::CornerRadius {
-                nw: 10,
-                ne: 10,
-                sw: 0,
-                se: 0,
-            })
-            .stroke(ctx.style().visuals.widgets.noninteractive.fg_stroke)
-            .outer_margin(1); // so the stroke is within the bounds
+            .corner_radius(ctx.style().visuals.window_corner_radius)
+            .stroke(ctx.style().visuals.window_stroke)
+            .outer_margin(ctx.style().visuals.window_stroke.width); // so the stroke is within the bounds
 
         // Draw window contents
         egui::CentralPanel::default()
@@ -122,9 +117,11 @@ impl state::Window {
 
     // Draws the contents of the title bar
     fn title_bar_contents(&mut self, ui: &mut egui::Ui) {
-        components::close_button(
+        components::button(
             ui,
             components::ButtonParams {
+                content: "❌".to_string(),
+                hover_text: "Close the window".to_string(),
                 size: egui::Vec2::new(ui.available_size().y, ui.available_size().y),
                 action: WindowAction::CloseWindow,
                 corner_radius: egui::CornerRadius {
@@ -147,9 +144,11 @@ impl state::Window {
             for action in actions {
                 action.execute(self, ui);
             }
-            components::plus_button(
+            components::button(
                 ui,
                 components::ButtonParams {
+                    content: "+".to_string(),
+                    hover_text: "New tab".to_string(),
                     size: egui::Vec2::new(ui.available_size().y, ui.available_size().y),
                     action: WindowAction::NewTab,
                     ..Default::default()

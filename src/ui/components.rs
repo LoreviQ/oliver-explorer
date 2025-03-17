@@ -4,6 +4,8 @@ use crate::ui::window::WindowAction;
 use eframe::egui;
 
 pub struct ButtonParams {
+    pub content: String,
+    pub hover_text: String,
     pub size: egui::Vec2,
     pub corner_radius: egui::CornerRadius,
     pub action: WindowAction,
@@ -13,6 +15,8 @@ pub struct ButtonParams {
 impl Default for ButtonParams {
     fn default() -> Self {
         Self {
+            content: "".to_string(),
+            hover_text: "".to_string(),
             size: egui::Vec2::new(16.0, 16.0),
             corner_radius: egui::CornerRadius {
                 nw: 0,
@@ -27,34 +31,17 @@ impl Default for ButtonParams {
 }
 
 // Close button component
-pub fn close_button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
-    let close_response = ui
+pub fn button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
+    let response = ui
         .add_sized(
             params.size,
-            egui::Button::new("❌")
+            egui::Button::new(params.content)
                 .corner_radius(params.corner_radius)
                 .stroke(params.stroke),
         )
-        .on_hover_text("Close the window");
-    if close_response.clicked() {
+        .on_hover_text(params.hover_text);
+    if response.clicked() {
         return params.action;
     }
-    WindowAction::None
-}
-
-// Plus button component
-pub fn plus_button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
-    let plus_response = ui
-        .add_sized(
-            params.size,
-            egui::Button::new("+")
-                .corner_radius(params.corner_radius)
-                .stroke(params.stroke),
-        )
-        .on_hover_text("New tab");
-    if plus_response.clicked() {
-        return params.action;
-    }
-
     WindowAction::None
 }

@@ -24,6 +24,13 @@ pub fn default_style() -> egui::Style {
                 },
                 open: default_widget_visuals(),
             },
+            window_corner_radius: egui::CornerRadius {
+                nw: 10,
+                ne: 10,
+                sw: 0,
+                se: 0,
+            },
+            window_stroke: egui::Stroke::new(1.0, egui::Color32::from_rgb(180, 180, 180)),
             ..Default::default()
         },
         spacing: egui::Spacing {

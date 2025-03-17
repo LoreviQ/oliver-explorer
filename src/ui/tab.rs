@@ -26,9 +26,11 @@ impl state::Tab {
             ui.set_width(width);
             inner_frame.show(ui, |ui| {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    action = components::close_button(
+                    action = components::button(
                         ui,
                         components::ButtonParams {
+                            content: "❌".to_string(),
+                            hover_text: "Close the tab".to_string(),
                             action: WindowAction::CloseTab(self.id),
                             ..Default::default()
                         },
