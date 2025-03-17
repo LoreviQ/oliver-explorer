@@ -28,8 +28,10 @@ impl state::Tab {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     action = components::close_button(
                         ui,
-                        egui::Vec2::new(16.0, 16.0),
-                        WindowAction::CloseTab(self.id),
+                        components::ButtonParams {
+                            action: WindowAction::CloseTab(self.id),
+                            ..Default::default()
+                        },
                     );
                     let label_response = ui
                         .with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {

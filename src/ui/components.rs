@@ -3,44 +3,52 @@
 use crate::ui::window::WindowAction;
 use eframe::egui;
 
+pub struct ButtonParams {
+    pub size: egui::Vec2,
+    pub corner_radius: egui::CornerRadius,
+    pub action: WindowAction,
+}
+
+impl Default for ButtonParams {
+    fn default() -> Self {
+        Self {
+            size: egui::Vec2::new(16.0, 16.0),
+            corner_radius: egui::CornerRadius {
+                nw: 0,
+                ne: 0,
+                sw: 0,
+                se: 0,
+            },
+            action: WindowAction::None,
+        }
+    }
+}
+
 // Close button component
-pub fn close_button(ui: &mut egui::Ui, size: egui::Vec2, action: WindowAction) -> WindowAction {
+pub fn close_button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
     let close_response = ui
-        .add_sized(size, egui::Button::new("❌"))
+        .add_sized(
+            params.size,
+            egui::Button::new("❌").corner_radius(params.corner_radius),
+        )
         .on_hover_text("Close the window");
     if close_response.clicked() {
-        return action;
+        return params.action;
     }
     WindowAction::None
 }
 
 // Plus button component
-pub fn plus_button(ui: &mut egui::Ui, size: egui::Vec2, action: WindowAction) -> WindowAction {
+pub fn plus_button(ui: &mut egui::Ui, params: ButtonParams) -> WindowAction {
     let plus_response = ui
-        .add_sized(size, egui::Button::new("+"))
+        .add_sized(
+            params.size,
+            egui::Button::new("+").corner_radius(params.corner_radius),
+        )
         .on_hover_text("New tab");
     if plus_response.clicked() {
-        return action;
+        return params.action;
     }
 
     WindowAction::None
 }
-
-/*
-// Hover effect
-if close_response.hovered() {
-    let hover_rect = close_response.rect;
-    ui.painter().rect_filled(
-        hover_rect,
-        4.0, // Rounded corners radius
-        self.settings.theme.general.hover,
-    );
-    ui.painter().text(
-        hover_rect.center(),
-        egui::Align2::CENTER_CENTER,
-        "×",
-        egui::FontId::proportional(self.settings.theme.frame.text_size),
-        stroke_color,
-    );
-}
-*/

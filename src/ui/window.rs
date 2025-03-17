@@ -124,8 +124,16 @@ impl state::Window {
     fn title_bar_contents(&mut self, ui: &mut egui::Ui) {
         components::close_button(
             ui,
-            egui::Vec2::new(ui.available_size().y, ui.available_size().y),
-            WindowAction::CloseWindow,
+            components::ButtonParams {
+                size: egui::Vec2::new(ui.available_size().y, ui.available_size().y),
+                action: WindowAction::CloseWindow,
+                corner_radius: egui::CornerRadius {
+                    nw: 0,
+                    ne: 10,
+                    sw: 0,
+                    se: 0,
+                },
+            },
         )
         .execute(self, ui);
         // Tabs
@@ -140,10 +148,12 @@ impl state::Window {
             }
             components::plus_button(
                 ui,
-                egui::Vec2::new(ui.available_size().y, ui.available_size().y),
-                WindowAction::NewTab,
+                components::ButtonParams {
+                    size: egui::Vec2::new(ui.available_size().y, ui.available_size().y),
+                    action: WindowAction::NewTab,
+                    ..Default::default()
+                },
             )
-            .execute(self, ui);
         });
     }
 
