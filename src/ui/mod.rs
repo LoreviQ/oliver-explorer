@@ -22,6 +22,10 @@ impl state::OliverExplorer {
 }
 
 impl eframe::App for state::OliverExplorer {
+    fn clear_color(&self, _visuals: &egui::Visuals) -> [f32; 4] {
+        egui::Rgba::TRANSPARENT.to_array() // Make sure we don't paint anything behind the rounded corners
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         for window in &mut self.windows {
             window.update(ctx);
