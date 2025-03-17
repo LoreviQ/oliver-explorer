@@ -23,23 +23,8 @@ impl state::OliverExplorer {
 
 impl eframe::App for state::OliverExplorer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let panel_frame = egui::Frame::new()
-            .fill(ctx.style().visuals.window_fill())
-            .corner_radius(egui::CornerRadius {
-                nw: 10,
-                ne: 10,
-                sw: 0,
-                se: 0,
-            })
-            .stroke(ctx.style().visuals.widgets.noninteractive.fg_stroke)
-            .outer_margin(1); // so the stroke is within the bounds
-
-        egui::CentralPanel::default()
-            .frame(panel_frame)
-            .show(ctx, |ui| {
-                for window in &mut self.windows {
-                    window.update(ctx, ui);
-                }
-            });
+        for window in &mut self.windows {
+            window.update(ctx);
+        }
     }
 }
