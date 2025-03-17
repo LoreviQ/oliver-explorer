@@ -138,8 +138,8 @@ impl state::Window {
         ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
             let tab_width = self.calculate_tab_width(ui);
             let mut actions = Vec::new();
-            for tab in &mut self.tabs {
-                actions.push(tab.draw_tab(ui, tab_width));
+            for (i, tab) in &mut self.tabs.iter().enumerate() {
+                actions.push(tab.draw_tab(ui, tab_width, i == 0));
             }
             for action in actions {
                 action.execute(self, ui);
