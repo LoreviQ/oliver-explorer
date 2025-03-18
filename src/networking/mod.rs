@@ -1,8 +1,14 @@
 use std::error::Error;
+use std::time::Duration;
 use url::Url;
 
-pub fn fetch_url(url: Url) -> Result<String, Box<dyn Error>> {
-    let response = reqwest::blocking::get(url)?;
+pub fn fetch_url(url: &Url) -> Result<String, Box<dyn Error>> {
+    let client = reqwest::blocking::ClientBuilder::new()
+        .user_agent("OliverExplorer/0.1")
+        .timeout(Duration::from_secs(30))
+        .build()?;
+
+    let response = client.get(url.clone()).send()?;
 
     // Check if the status code indicates success
     if !response.status().is_success() {
@@ -39,7 +45,7 @@ mod tests {
             Ok(url) => url,
             Err(e) => panic!("Failed to parse URL: {}", e),
         };
-        let result = fetch_url(url);
+        let result = fetch_url(&url);
 
         // Verify the request was made and successful
         mock.assert();
@@ -59,7 +65,7 @@ mod tests {
             Ok(url) => url,
             Err(e) => panic!("Failed to parse URL: {}", e),
         };
-        let result = fetch_url(url);
+        let result = fetch_url(&url);
 
         // Verify the request was made and failed
         assert!(result.is_err());
