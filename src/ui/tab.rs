@@ -7,7 +7,7 @@ use crate::ui::components;
 use crate::ui::window::WindowAction;
 
 impl state::Tab {
-    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32, first: bool) -> WindowAction {
+    pub fn draw_tab(&self, ui: &mut egui::Ui, width: f32) -> WindowAction {
         let mut action = WindowAction::None;
 
         // Get the background fill for the tab
@@ -15,14 +15,11 @@ impl state::Tab {
             true => ui.visuals().widgets.active.bg_fill,
             false => ui.visuals().widgets.inactive.bg_fill,
         };
-        let corner_radius = match first {
-            true => egui::CornerRadius {
-                nw: 10,
-                ne: 0,
-                sw: 0,
-                se: 0,
-            },
-            false => egui::CornerRadius::default(),
+        let corner_radius = egui::CornerRadius {
+            nw: 10,
+            ne: 10,
+            sw: 0,
+            se: 0,
         };
 
         // Create a frame for the tab with fixed width and padding
