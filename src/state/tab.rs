@@ -21,8 +21,7 @@ pub struct Tab {
 
 impl Tab {
     pub fn new(id: usize, settings: Arc<AppSettings>) -> Self {
-        let html_content = networking::fetch_url(&settings.default_url).unwrap_or_default();
-        let content = html::parse_html(&html_content).unwrap_or_default();
+        let content = Tab::content_from_url(&settings.default_url).unwrap_or_default();
         Self {
             id,
             url: settings.default_url.to_string(),
@@ -47,6 +46,12 @@ impl Tab {
         if url.is_empty() {
             return Err("Empty URL".to_string());
         }
+        let content = Tab::content_from_url(url)?;
+        self.content = content;
+        Ok(())
+    }
+
+    fn content_from_url(url: &str) -> Result<String, String> {
         // Fetch the URL content
         let html_content = match networking::fetch_url(url) {
             Ok(html_content) => html_content,
@@ -57,10 +62,7 @@ impl Tab {
             Ok(parsed_content) => parsed_content,
             Err(e) => return Err(format!("Failed to parse HTML: {}", e)),
         };
-        // Update the tab with the new content
-        self.url = url.to_string();
-        self.content = parsed_content;
-        Ok(())
+        Ok(parsed_content)
     }
 }
 

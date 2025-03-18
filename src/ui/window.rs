@@ -228,11 +228,6 @@ impl state::Window {
                 // Take all available remaining height
                 ui.set_min_height(ui.available_height());
                 ui.set_min_width(ui.available_width());
-
-                // Set text color for content
-                //let text_color = self.settings.theme.general.text;
-                //ui.visuals_mut().override_text_color = Some(text_color);
-
                 let active_tab = self.get_active_tab().expect("No active tab found");
                 ui.label(&active_tab.content);
                 // TODO: Add a proper HTML renderer here
