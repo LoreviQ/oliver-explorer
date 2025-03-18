@@ -1,6 +1,7 @@
 use std::error::Error;
+use url::Url;
 
-pub fn fetch_url(url: &str) -> Result<String, Box<dyn Error>> {
+pub fn fetch_url(url: Url) -> Result<String, Box<dyn Error>> {
     let response = reqwest::blocking::get(url)?;
 
     // Check if the status code indicates success
@@ -34,7 +35,11 @@ mod tests {
         // Fetch from mock server with a valid endpoint
         let (server, mock) = setup_mock_server();
         let endpoint = format!("{}/helloworld", server.url());
-        let result = fetch_url(&endpoint);
+        let url = match Url::parse(&endpoint) {
+            Ok(url) => url,
+            Err(e) => panic!("Failed to parse URL: {}", e),
+        };
+        let result = fetch_url(url);
 
         // Verify the request was made and successful
         mock.assert();
@@ -50,7 +55,11 @@ mod tests {
         // Fetch from mock server with an invalid endpoint
         let (server, _) = setup_mock_server();
         let endpoint = format!("{}/shouldfail", server.url());
-        let result = fetch_url(&endpoint);
+        let url = match Url::parse(&endpoint) {
+            Ok(url) => url,
+            Err(e) => panic!("Failed to parse URL: {}", e),
+        };
+        let result = fetch_url(url);
 
         // Verify the request was made and failed
         assert!(result.is_err());

@@ -2,6 +2,7 @@ use crate::html;
 use crate::networking;
 use crate::state::settings::AppSettings;
 use std::sync::Arc;
+use url::Url;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TabState {
@@ -12,7 +13,7 @@ pub enum TabState {
 #[derive(Debug)]
 pub struct Tab {
     pub id: usize,
-    pub url: String,
+    pub url: Url,
     pub content: String,
     pub settings: Arc<AppSettings>,
     state: TabState,
@@ -21,10 +22,10 @@ pub struct Tab {
 
 impl Tab {
     pub fn new(id: usize, settings: Arc<AppSettings>) -> Self {
-        let content = Tab::content_from_url(&settings.default_url).unwrap_or_default();
+        let content = Tab::content_from_url(settings.default_url.clone()).unwrap_or_default();
         Self {
             id,
-            url: settings.default_url.to_string(),
+            url: settings.default_url.clone(),
             content,
             settings,
             state: TabState::Active,
@@ -46,12 +47,18 @@ impl Tab {
         if url.is_empty() {
             return Err("Empty URL".to_string());
         }
+        // parse url
+        let url = match Url::parse(url) {
+            Ok(url) => url,
+            Err(e) => return Err(format!("Failed to parse URL: {}", e)),
+        };
+
         let content = Tab::content_from_url(url)?;
         self.content = content;
         Ok(())
     }
 
-    fn content_from_url(url: &str) -> Result<String, String> {
+    fn content_from_url(url: Url) -> Result<String, String> {
         // Fetch the URL content
         let html_content = match networking::fetch_url(url) {
             Ok(html_content) => html_content,

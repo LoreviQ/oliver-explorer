@@ -1,8 +1,10 @@
 use crate::state::theme::Layout;
 use std::fmt;
+use url::Url;
+
 pub struct AppSettings {
     pub title: String,
-    pub default_url: String,
+    pub default_url: Url,
     pub layout: Layout,
 }
 
@@ -10,7 +12,7 @@ impl Default for AppSettings {
     fn default() -> Self {
         Self {
             title: "Oliver Explorer".to_string(),
-            default_url: "http://localhost:3333".to_string(),
+            default_url: Url::parse("http://localhost:3333").unwrap(),
             layout: Layout::default(),
         }
     }
@@ -34,6 +36,9 @@ mod tests {
     fn test_default_settings() {
         let settings = AppSettings::default();
         assert_eq!(settings.title, "Oliver Explorer");
-        assert_eq!(settings.default_url, "http://localhost:3333");
+        assert_eq!(
+            settings.default_url,
+            Url::parse("http://localhost:3333").unwrap()
+        );
     }
 }

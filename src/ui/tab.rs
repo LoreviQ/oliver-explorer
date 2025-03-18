@@ -28,7 +28,7 @@ impl state::Tab {
             .corner_radius(corner_radius);
         let inner_frame = egui::Frame::new().inner_margin(ui.spacing().window_margin);
 
-        let label = egui::Label::new(egui::RichText::new(&self.url)).truncate();
+        let label = egui::Label::new(egui::RichText::new(&self.url.to_string())).truncate();
 
         outer_frame.show(ui, |ui| {
             ui.set_width(width);
