@@ -1,3 +1,4 @@
+pub mod dom;
 pub mod html;
 pub mod networking;
 pub mod state;
