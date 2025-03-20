@@ -1,27 +1,89 @@
 use std::collections::HashMap;
 
+/// HTML element types
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ElementType {
+    Html,
+    Head,
+    Title,
+    Body,
+    Div,
+    Span,
+    P,
+    A,
+    Img,
+    Script,
+    Style,
+    // Add more HTML elements as needed
+    Custom(String), // For custom or less common elements
+}
+
+impl ElementType {
+    pub fn from_str(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "html" => ElementType::Html,
+            "head" => ElementType::Head,
+            "title" => ElementType::Title,
+            "body" => ElementType::Body,
+            "div" => ElementType::Div,
+            "span" => ElementType::Span,
+            "p" => ElementType::P,
+            "a" => ElementType::A,
+            "img" => ElementType::Img,
+            "script" => ElementType::Script,
+            "style" => ElementType::Style,
+            // Add more mappings as needed
+            _ => ElementType::Custom(s.to_string()),
+        }
+    }
+}
+
+/// DOCTYPE declarations
+#[derive(Debug, Clone, PartialEq)]
+pub enum DoctypeType {
+    Html5,               // <!DOCTYPE html>
+    Html4Strict,         // HTML 4.01 Strict
+    Html4Transitional,   // HTML 4.01 Transitional
+    Html4Frameset,       // HTML 4.01 Frameset
+    Xhtml10Strict,       // XHTML 1.0 Strict
+    Xhtml10Transitional, // XHTML 1.0 Transitional
+    Xhtml10Frameset,     // XHTML 1.0 Frameset
+    Xhtml11,             // XHTML 1.1
+    Custom(String),      // For custom doctypes
+}
+
+impl DoctypeType {
+    pub fn from_str(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "html" => DoctypeType::Html5,
+            // Add more mappings for other DOCTYPE declarations
+            _ => DoctypeType::Custom(s.to_string()),
+        }
+    }
+}
+
 /// Represents a node in the DOM tree
 #[derive(Debug, Clone)]
 pub enum Node {
     Element(Element),
     Text(String),
     Comment(String),
-    Doctype(String),
+    Doctype(DoctypeType),
 }
 
 /// Represents an HTML element with a tag name, attributes, and child nodes
 #[derive(Debug, Clone)]
 pub struct Element {
-    pub tag_name: String,
+    pub element_type: ElementType,
     pub attributes: HashMap<String, String>,
     pub children: Vec<Node>,
 }
 
 impl Node {
     /// Creates a new element node
-    pub fn new_element(tag_name: &str) -> Self {
+    pub fn new_element(tag_name: ElementType) -> Self {
         Node::Element(Element {
-            tag_name: tag_name.to_lowercase(),
+            element_type: tag_name,
             attributes: HashMap::new(),
             children: Vec::new(),
         })
@@ -38,8 +100,8 @@ impl Node {
     }
 
     /// Creates a new doctype node
-    pub fn new_doctype(doctype: &str) -> Self {
-        Node::Doctype(doctype.to_string())
+    pub fn new_doctype(doctype: DoctypeType) -> Self {
+        Node::Doctype(doctype)
     }
 }
 
@@ -63,7 +125,7 @@ impl Document {
     pub fn html_element(&self) -> Option<&Element> {
         for node in &self.nodes {
             if let Node::Element(element) = node {
-                if element.tag_name == "html" {
+                if element.element_type == ElementType::Html {
                     return Some(element);
                 }
             }
@@ -78,9 +140,9 @@ mod tests {
 
     #[test]
     fn test_new_element() {
-        let node = Node::new_element("div");
+        let node = Node::new_element(ElementType::Div);
         if let Node::Element(element) = node {
-            assert_eq!(element.tag_name, "div");
+            assert_eq!(element.element_type, ElementType::Div);
             assert!(element.attributes.is_empty());
             assert!(element.children.is_empty());
         } else {
@@ -110,9 +172,9 @@ mod tests {
 
     #[test]
     fn test_new_doctype() {
-        let node = Node::new_doctype("html");
+        let node = Node::new_doctype(DoctypeType::Html5);
         if let Node::Doctype(doctype) = node {
-            assert_eq!(doctype, "html");
+            assert_eq!(doctype, DoctypeType::Html5);
         } else {
             panic!("Expected Doctype node");
         }
@@ -124,24 +186,24 @@ mod tests {
         assert!(doc.nodes.is_empty());
 
         // Add DOCTYPE
-        doc.add_node(Node::new_doctype("html"));
+        doc.add_node(Node::new_doctype(DoctypeType::Html5));
 
         // Add HTML element
         let mut html = Element {
-            tag_name: "html".to_string(),
+            element_type: ElementType::Html,
             attributes: HashMap::new(),
             children: Vec::new(),
         };
 
         // Add HEAD element with TITLE
         let mut head = Element {
-            tag_name: "head".to_string(),
+            element_type: ElementType::Head,
             attributes: HashMap::new(),
             children: Vec::new(),
         };
 
         let title = Element {
-            tag_name: "title".to_string(),
+            element_type: ElementType::Title,
             attributes: HashMap::new(),
             children: vec![Node::new_text("Test Page")],
         };
@@ -150,7 +212,7 @@ mod tests {
 
         // Add BODY element with text
         let body = Element {
-            tag_name: "body".to_string(),
+            element_type: ElementType::Body,
             attributes: HashMap::new(),
             children: vec![Node::new_text("Hello World")],
         };
@@ -165,7 +227,21 @@ mod tests {
 
         // Test html_element helper
         let html_element = doc.html_element().unwrap();
-        assert_eq!(html_element.tag_name, "html");
+        assert_eq!(html_element.element_type, ElementType::Html);
         assert_eq!(html_element.children.len(), 2);
+    }
+
+    #[test]
+    fn test_custom_element() {
+        let node = Node::new_element(ElementType::Custom("custom-element".to_string()));
+        if let Node::Element(element) = node {
+            if let ElementType::Custom(name) = &element.element_type {
+                assert_eq!(name, "custom-element");
+            } else {
+                panic!("Expected Custom element type");
+            }
+        } else {
+            panic!("Expected Element node");
+        }
     }
 }
